@@ -17,7 +17,7 @@ const makeProject = projectID=> {
     removalIDs.forEach( removalID=> {
       for ( let currentTodoIndex = 0; currentTodoIndex<todosArr.length; currentTodoIndex++ ){
         //iterate through each todo until its ID matches removalID
-        if ( todosArr[currentTodoIndex].getID() === removalID ){
+        if ( todosArr[currentTodoIndex].getTodoID() === removalID ){
           todosArr.splice(currentTodoIndex,1);
           currentTodoIndex--; //reposition currentTodoIndex after an in place removal
           break; //no need to keep going after a match and delete
@@ -37,7 +37,7 @@ const makeProject = projectID=> {
 
 //project rendering module
 const renderProject = project=> {
-  //make each project div with title/desc/.etc children
+  //make each project div's title/desc/buttons/etc. children
   const projectDiv = document.createElement('div');
   projectDiv.className = 'project'; //project element identifiers
   projectDiv.setAttribute( 'data-id', `${ project.getProjectID() }`);
@@ -61,7 +61,25 @@ const renderProject = project=> {
   todosWrap.className = 'todosWrap';
 
   //fill the todos wrapper
-  
+  lg( `project ${project.getProjectID()}'s Todos: ` )
+  lg( project.getTodosArr() )
+  project.getTodosArr().forEach( todo=>{
+    //make the todo's html element. pick element for data-id location wisely...
+    const todoDiv = document.createElement('div');
+    todoDiv.className = 'todoDiv';
+    const todoTitle = document.createElement('input')
+    todoTitle.className = 'todoTitle';
+    todoTitle.placeholder = todo.getTitle();
+    const todoNotes = document.createElement('input');
+    todoNotes.className = 'todoNotes';
+    todoNotes.placeholder = todo.getNotes(); // ...................................continue here with completed state checkbox
+    
+
+    //append todo's children
+    todoDiv.append(todoTitle, todoNotes);
+    //append todo to wrapper in project
+    todosWrap.append( todoDiv )
+  } );
 
   //fill project and its parent
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
@@ -72,7 +90,7 @@ const renderProject = project=> {
 //made by passing in a number type argument for ID
 //have: title, notes, due date/time, priorityLevel, completion state
 const makeTodo = id=> {
-  let title = 'Untitled Todo', dueDate = '', dueTime = '', notes = '', priorityLevel = 'normal', completedState = false;
+  let title = '...Untitled Todo', dueDate = '', dueTime = '', notes = '...add notes', priorityLevel = 'normal', completedState = false;
 
   //fn to toggle completedState of a todo instance. somehow call from a checkbox event listener, maybe choose the todo object using the id from a data-* attribute?
   const toggleCompletedState = ()=> {
@@ -82,7 +100,7 @@ const makeTodo = id=> {
   const setPriorityLevel = newLevel=> priorityLevel = newLevel;
 
   return { //public exposure
-    getID: ()=> id,
+    getTodoID: ()=> id,
     getTitle: ()=> title,
     getNotes: ()=> notes,
     getDueDate: ()=> dueDate,
@@ -108,6 +126,9 @@ const makeTodo = id=> {
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
 
+  //project rendering testing
+  for (let runs = 1; runs<=3; runs++) { projectsArr[0].addTodo() };
+
   //render each project
   projectsArr.forEach( project=> renderProject(project) );
 
@@ -121,7 +142,7 @@ const makeTodo = id=> {
   // for (let runs = 1; runs<=5; runs++) { projectsArr[0].addTodo() };
   // lg( 'removing index 1 & 3 todos...' )
   // projectsArr[0].removeCompletedTodos(1,3);
-  // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `ID of todo at index ${i}: ${todo.getID()}` ) );
+  // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `ID of todo at index ${i}: ${todo.getTodoID()}` ) );
   //test toggling completed state
   // lg('toggling a todo\'s completed state and logging all for comparison..')
   // projectsArr[0].getTodosArr()[2].toggleCompletedState()
