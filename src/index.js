@@ -1,4 +1,6 @@
 /*-- Next tasks:
+- handle cases where local storage might not be available or, if the stored data structure changes in future versions of the app
+- refactor the repetitive code when handling different types of input elements in the event listeners. make more modular by calling a function from the event listener like: handleInputElementChange(e, project, todosWrap);
 
 --- Optional tasks:
 - add confirm popup for remove project /clear todos buttons.
