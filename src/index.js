@@ -18,7 +18,7 @@ const makeProject = projectID=> {
   const removeCompletedTodos = (...removalIDs)=> { //pass in number type IDs of todos to delete
     removalIDs.forEach( removalID=> {
       for ( let currentTodoIndex = 0; currentTodoIndex<todosArr.length; currentTodoIndex++ ){
-        //iterate through each todo until its ID matches removalID
+        //iterate through each todo until its ID matches removalID. could have been done with a filter since it is shallow copy, but whatever. that is actually done later for a similar loop.
         if ( todosArr[currentTodoIndex].getTodoID() === removalID ){
           todosArr.splice(currentTodoIndex,1);
           currentTodoIndex--; //reposition currentTodoIndex after an in place removal
@@ -26,7 +26,10 @@ const makeProject = projectID=> {
         }
       }
     });
+    //after the todosArr is cleaned up, need to rerender todos...
+
   }
+
   return { //public exposure. projectID is passed in and exposed, unmodified
     getProjectID: ()=> projectID,
     getTitle: ()=> title,
@@ -81,6 +84,11 @@ const addProjectListeners = (projectDiv, project)=> {
     e.stopPropagation();
     // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
 
+    //handle project removal with: appFlow.removeProject(project_id)
+    if ( e.target.className === 'removeProjectBtn' ) {
+      appFlow.removeProject( e.target.parentElement.parentElement.dataset.projectId );
+    }
+
     //handle todo expansion button clicks
     if ( e.target.tagName === 'BUTTON' && e.target.dataset.todoId ) {
       const btn = e.target;
@@ -91,11 +99,38 @@ const addProjectListeners = (projectDiv, project)=> {
       } );
     }
 
-    //handle project removal with: appFlow.removeProject(project_id)
-    if ( e.target.className === 'removeProjectBtn' ) {
-      appFlow.removeProject( e.target.parentElement.parentElement.dataset.projectId );
+    //handle clicks on completion checkbox inputs to toggle completed states of todos
+    if ( e.target.className === 'completionBox' ) {
+      project.getTodosArr().forEach( todo=> { //find the todo to toggle its completed state
+        if ( todo.getTodoID() === +e.target.dataset.todoId ) {
+         todo.toggleCompletedState();
+        }
+      } );
     }
+    //handle clicks on clear done todos buttons. use projects' removeCompletedTodos(...IDs) to edit their todos arrays and trigger rerender.
+    if ( e.target.className === 'removeCompletedTodosBtn' ) {
+      //testing
+      // project.getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
 
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
 
   });
 
@@ -162,6 +197,7 @@ const renderTodos = ( project, todosWrap )=> {
     todoTitle.placeholder = todo.getTitle();
     const completionBox = document.createElement('input'); //completed state checkbox
     completionBox.className = 'completionBox';
+    completionBox.setAttribute( 'data-todo-id',`${ todo.getTodoID() }` );//for listener on project
     completionBox.setAttribute('type','checkbox');
     completionBox.checked = todo.getCompletedState();
     const todoNotes = document.createElement('input');
@@ -239,10 +275,6 @@ const appFlow = ( ()=> {
   // lg( 'removing index 1 & 3 todos...' )
   // projectsArr[0].removeCompletedTodos(1,3);
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `ID of todo at index ${i}: ${todo.getTodoID()}` ) );
-  //test toggling completed state
-  // lg('toggling a todo\'s completed state and logging all for comparison..')
-  // projectsArr[0].getTodosArr()[2].toggleCompletedState()
-  // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
   // lg('setting a todo\'s priority level and logging all for comparison..')
   // projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
