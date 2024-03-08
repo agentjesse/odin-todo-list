@@ -76,10 +76,10 @@ body {
     width: 100%;
     font-size: 1.25rem;
     background-color: var(--fg300);
-    cursor: text; /* for datetime-local */
     margin: 0.25rem 0;
     border-style: none;
     color: var(--bg900);
+    display: block;
   }
   input::placeholder {
     color: var(--fg200);
@@ -118,13 +118,10 @@ body {
   }
   .todoTitleInput {
     flex-basis: 75%;
-    background-color: var(--fg300);/*for dev*/
   }
   .todoNotesInput {
     flex-basis: 75%;
     margin: 0 auto 0.25rem;
-    display: block;
-    background-color: var(--fg300);/*for dev*/
   }
   .completionBoxInput {
     width: 2rem; /* match expand btn*/
@@ -145,6 +142,7 @@ body {
   }
   .dueDateTimeInput {
     flex-basis: 42%;
+    cursor: pointer;
   }
   .prioritySelect {
     width: 4.75rem;

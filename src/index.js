@@ -62,6 +62,8 @@ const appendProject = ( project, projectsWrap )=> {
   //make each project div's children. do any repetitive attribute setting later
   const projectWrap = document.createElement('div');
   const projectTitleInput = document.createElement('input');
+  // lg( 'projectTitleInput:' )
+  // lg( projectTitleInput )
   if ( project.getTitle() ){  projectTitleInput.value = project.getTitle() }
       else { projectTitleInput.placeholder = project.getTitlePlaceholder() }
   const projectDescriptionInput = document.createElement('input');
