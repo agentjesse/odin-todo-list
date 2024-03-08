@@ -1,7 +1,7 @@
-/* Next task:
-- new projects should render with at least one todo
-
+/*-- Next tasks:
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
+
+--- Optional tasks:
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
 
@@ -96,9 +96,9 @@ const addProjectListeners = (projectWrap, project)=> {
       Array.from(e.target.parentElement.children).forEach( (elem,i)=>{
         if (i>2) { elem.classList.toggle('noDisplay') }
       } );
-      lg( 'clicked expansion button for todo: ' + e.target.dataset.todoId )
+      // lg( 'clicked expansion button for todo: ' + e.target.dataset.todoId )
       todo.setOpenState( todo.getOpenState() ? false : true );
-      lg( 'new todo open state:' + todo.getOpenState() );
+      // lg( 'new todo open state:' + todo.getOpenState() );
     }
 
     // Handle clicks on completion checkbox inputs to toggle completed states of todos
@@ -127,16 +127,16 @@ const addProjectListeners = (projectWrap, project)=> {
 
     //handle project's title edits
     if ( e.target.className === 'projectTitleInput' ) {
-      lg( 'old project title: ' + project.getTitle() ); //get from 'free variable' of getTitle() closure
+      // lg( 'old project title: ' + project.getTitle() ); //get from 'free variable' of getTitle() closure
       project.setTitle(e.target.value); //set 'free variable' of setTitle() closure
-      lg( 'new project title: ' + project.getTitle() );
+      // lg( 'new project title: ' + project.getTitle() );
     }
 
     //handle project's description edits
     if ( e.target.className === 'projectDescriptionInput' ) {
-      lg('old project description: ' + project.getDescription());
+      // lg('old project description: ' + project.getDescription());
       project.setDescription(e.target.value);
-      lg('new project description: ' + project.getDescription());
+      // lg('new project description: ' + project.getDescription());
     }
 
     //handle individual todo title edits
@@ -146,7 +146,7 @@ const addProjectListeners = (projectWrap, project)=> {
         .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
         .setTitle(e.target.value);
       //testing
-      lg( 'new todo title:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getTitle() );
+      // lg( 'new todo title:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getTitle() );
     }
 
     //handle individual todo notes edits
@@ -155,7 +155,7 @@ const addProjectListeners = (projectWrap, project)=> {
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId ) //make sure the data attribute exists!!
       .setNotes(e.target.value);
-      lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
+      // lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
     }
 
   } );
@@ -163,7 +163,7 @@ const addProjectListeners = (projectWrap, project)=> {
   //handle the bubbling change events when inputs lose focus
   projectWrap.addEventListener( 'change' , e=> {
     e.stopPropagation();
-    lg('this changed value: ' + e.target.outerHTML ); // nice output of element in console
+    // lg('this changed value: ' + e.target.outerHTML ); // nice output of element in console
     //multi use variable for cleaner invocations later
     const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.parentElement.parentElement.dataset.projectId }']`)
 
@@ -171,27 +171,24 @@ const addProjectListeners = (projectWrap, project)=> {
     //info: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
     //lg( new Date().toISOString().slice(0,16) ); // YYYY-MM-DDThh:mm format string value for <input type="datetime-local">
     if ( e.target.className === 'dueDateTimeInput' ) {
-      lg('old todo dueDateTime:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
+      // lg('old todo dueDateTime:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
 
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setDueDateTime(e.target.value);
 
-      lg('new todo dueDateTime:' + project.getTodosArr()
-      .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
+      // lg('new todo dueDateTime:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
     }
 
     //handle changes to selects with class 'prioritySelect'
     if ( e.target.className === 'prioritySelect' ) {
-      lg('old todo priority:' + project.getTodosArr()
-      .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
+      // lg('old todo priority:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
 
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setPriorityLevel(e.target.value); // target.value is 'high'/'normal'/'low'
 
-      lg('new todo priority:' + project.getTodosArr()
-      .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
+      // lg('new todo priority:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
 
       appendTodos( project, todosWrap ) //rerender
     }
@@ -333,8 +330,8 @@ const appFlow = ( ()=> {
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
 
-  //todo rendering testing, fill first project in projectArr with some todos
-  for (let runs = 1; runs<=2; runs++) { projectsArr[0].addTodo() };
+  //first run: project[0] in projectArr should have one todo
+  projectsArr[0].addTodo()
 
   //render each project
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );

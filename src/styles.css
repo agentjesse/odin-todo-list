@@ -90,7 +90,7 @@ body {
     gap: 0.25rem;
     margin: 0.5rem 0.25rem 0.75rem 0.25rem;
     button {
-      background-color: var(--fg200);
+      background-color: var(--fg100);
       color: var(--bg900);
       border-radius: 5px;
       border-style: none;
@@ -148,6 +148,8 @@ body {
   .prioritySelect {
     width: 4.75rem;
     cursor: pointer;
+    color: var(--bg950);
+    background-color: var(--fg100);
   }
   .noDisplay {
     display: none;
