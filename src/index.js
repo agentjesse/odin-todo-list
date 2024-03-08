@@ -95,11 +95,10 @@ const addProjectListeners = (projectDiv, project)=> {
 
     //handle todo expansion button clicks
     if ( e.target.tagName === 'BUTTON' && e.target.dataset.todoId ) {
-      const btn = e.target;
-      btn.textContent = btn.textContent === '▼' ? '▲' : '▼';
+      e.target.textContent = e.target.textContent === '▼' ? '▲' : '▼';
       //iterate through all elements in a todo and give some a hiding class
-      Array.from(btn.parentElement.children).forEach( (element,i)=>{
-        if (i>2) { element.classList.toggle('noDisplay') }
+      Array.from(e.target.parentElement.children).forEach( (elem,i)=>{
+        if (i>2) { elem.classList.toggle('noDisplay') }
       } );
     }
 
@@ -107,23 +106,24 @@ const addProjectListeners = (projectDiv, project)=> {
     if ( e.target.className === 'completionBox' ) {
       project.getTodosArr().forEach( todo=> { //find the todo to toggle its completed state
         if ( todo.getTodoID() === +e.target.dataset.todoId ) {
-         todo.toggleCompletedState();
+          todo.toggleCompletedState();
         }
       } );
     }
-    
+
     //handle clicks on clear done todos buttons
     if ( e.target.className === 'removeCompletedTodosBtn' ) {
       //testing: check todos' completed states before doing anything
       // project.getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
-      const removalIDs = [];//removeCompletedTodos invoked with id arguments...bad, need to refactor in future
+      //removeCompletedTodos invoked with id arguments...bad implementation, need to refactor in future
+      const removalIDs = [];
       project.getTodosArr().forEach( todo=> { 
         if ( todo.getCompletedState() ) {
           removalIDs.push( todo.getTodoID() );
         }
       });
       project.removeCompletedTodos(...removalIDs); //clean up project's todos array
-      renderTodos( project, todosWrap ); //rerender todos
+      renderTodos( project, todosWrap ); //then rerender todos
     }
 
     // handle add todo button clicks, rerender todos
@@ -141,18 +141,30 @@ const addProjectListeners = (projectDiv, project)=> {
 
     //handle project's title edits
     if ( e.target.tagName === 'INPUT' && e.target.placeholder === '...Project Title' ) {
-      const titleInput = e.target;
-      lg( 'old title: ' + project.getTitle() )
-      project.setTitle(titleInput.value)
-      lg( 'new title: ' + project.getTitle() )
+      lg( 'old project title: ' + project.getTitle() ) //get from 'free variable' of getTitle() closure
+      project.setTitle(e.target.value) //set 'free variable' of setTitle() closure
+      lg( 'new project title: ' + project.getTitle() ) 
     }
 
     //handle project's description edits
     if (e.target.tagName === 'INPUT' && e.target.placeholder === '...Project Description') {
-      const descriptionInput = e.target;
-      lg('old description: ' + project.getDescription())
-      project.setDescription(descriptionInput.value)
-      lg('new description: ' + project.getDescription())
+      lg('old project description: ' + project.getDescription())
+      project.setDescription(e.target.value) 
+      lg('new project description: ' + project.getDescription())
+    }
+
+    //handle individual todo title edits
+    if ( e.target.className === 'todoTitle' ) {
+      lg( e.target.className )
+      
+
+
+
+
+
+
+
+
     }
 
   });
@@ -162,7 +174,7 @@ const addProjectListeners = (projectDiv, project)=> {
 //made by passing in a number type argument for ID
 //have: title, notes, due date/time, priorityLevel, completion state
 const makeTodo = id=> {
-  let title = '...Untitled Todo', dueDate = '', dueTime = '',
+  let title = '', titlePlaceholder = '...Untitled Todo', dueDate = '', dueTime = '',
       notes = '...add notes', priorityLevel = 'normal', completedState = false;
   //fn to toggle completedState of a todo instance. somehow call from a checkbox event listener, maybe choose the todo object using the id from a data-* attribute?
   const toggleCompletedState = ()=> completedState = completedState ? false : true;
@@ -172,6 +184,7 @@ const makeTodo = id=> {
   return { //public exposure
     getTodoID: ()=> id,
     getTitle: ()=> title,
+    getTitlePlaceholder: ()=> titlePlaceholder,
     getNotes: ()=> notes,
     getDueDate: ()=> dueDate,
     getDueTime: ()=> dueTime,
@@ -196,7 +209,7 @@ const renderTodos = ( project, todosWrap )=> {
     todoExpandBtn.setAttribute( 'data-todo-id',`${ todo.getTodoID() }` );//for listener on project
     const todoTitle = document.createElement('input')
     todoTitle.className = 'todoTitle';
-    todoTitle.placeholder = todo.getTitle();
+    todoTitle.placeholder = todo.getTitlePlaceholder();
     const completionBox = document.createElement('input'); //completed state checkbox
     completionBox.className = 'completionBox';
     completionBox.setAttribute( 'data-todo-id',`${ todo.getTodoID() }` );//for listener on project

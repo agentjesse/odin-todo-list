@@ -25,7 +25,8 @@ button { display: block; cursor: pointer; }
   --fg100: hsl(182, 80%, 90%);
   --fg50:  hsl(185, 81%, 96%);
   */
-  /*brown (for dev)*/
+
+  /*brown theme (for dev)*/
   --bg950: hsl(33, 91%, 9%);
   --bg900: hsl(31, 86%, 16%);
   --bg800: hsl(30, 88%, 20%);
@@ -54,6 +55,7 @@ body {
     width: 100%;
     font-size: 1.25rem;
     background-color: var(--fg50);
+    background-color: var(--fg300);/*for dev*/
     cursor: text; /* for datetime-local */
     margin: 0.25rem 0;
     border-style: none;
@@ -85,25 +87,41 @@ body {
   justify-content: center;
   align-items: center;
   background-color: var(--fg100);
+  background-color: var(--fg400);/*for dev*/
   margin: 0 0 0.5rem 0;
   gap: 0 0.25rem;
   button {
     border-style: none;
     background-color: var(--fg300);
+    color: var(--bg950); /*ios safari does not default to black for button text*/
   }
   .todoTitle {
     flex-basis: 75%;
+    background-color: var(--fg300);/*for dev*/
   }
   .todoNotes {
     flex-basis: 75%;
     margin: 0 auto 0.25rem;
     display: block;
+    background-color: var(--fg300);/*for dev*/
   }
   .completionBox {
     width: 2rem;
     height: 2rem;
     accent-color: var(--fg400);
+    background-color: var(--fg300);/*for dev*/
     cursor: pointer;
+  }
+  .completionBox::before { /*checkbox inputs styling overlay. first 3 props needed, plus :checked::before rule after*/
+    content: "";
+    display: block;
+    height: 100%;
+    background-color: var(--fg100); /* Initial background color */
+    border-radius: 2px; /* round overlay to match*/
+  }
+  /* Adjust the opacity of the pseudo-element when the checkbox is checked */
+  .completionBox:checked::before {
+    display: none; /* remove pseudo-element when checked */
   }
   .dueDateTime {
     flex-basis: 42%;
