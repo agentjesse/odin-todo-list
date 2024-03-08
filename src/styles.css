@@ -79,6 +79,7 @@ body {
     cursor: text; /* for datetime-local */
     margin: 0.25rem 0;
     border-style: none;
+    color: var(--bg900);
   }
   input::placeholder {
     color: var(--fg200);
@@ -87,13 +88,13 @@ body {
     display: flex;
     justify-content: space-between;
     gap: 0.25rem;
+    margin: 0.5rem 0.25rem 0.75rem 0.25rem;
     button {
       background-color: var(--fg200);
       color: var(--bg900);
       border-radius: 5px;
       border-style: none;
       padding: 0.25rem;
-      margin: 0.1rem 0 0.5rem 0;
       box-shadow: 0 0 2px 2px var(--bg600);
     }
     button:hover{

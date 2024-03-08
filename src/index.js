@@ -2,6 +2,7 @@
 - implement todo priority ordering; maybe use array sort?
 
 - do not auto close todo's when adding new or clearing done ones
+
 - new projects should render with at least one todo
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
@@ -291,12 +292,27 @@ const appendTodos = ( project, todosWrap )=> {
       }
       elem.setAttribute('data-todo-id', `${ todo.getTodoID() }`); //set identifier
     } );
-
+    
     //append children to their wrappers
     priorityOptGroup.append( highOption, normalOption, lowOption );
     prioritySelect.append( priorityOptGroup );
     todoWrap.append(todoExpandBtn, todoTitleInput, completionBoxInput, todoNotesInput, dueDateTimeInput, prioritySelect);
     todosWrap.append( todoWrap )
+    //sort each todoWrap div in the todoswrap by priority after they are added...
+    lg( todosWrap.childNodes )
+
+
+
+
+
+
+
+    
+
+
+
+
+
   } );
 }
 
