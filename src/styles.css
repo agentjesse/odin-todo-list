@@ -81,37 +81,36 @@ body {
     }
   }
 }
-.todoDiv {
+.todoWrap {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  background-color: var(--fg100);
-  background-color: var(--fg400);/*for dev*/
+  background-color: var(--fg400);
   margin: 0 0 0.5rem 0;
   gap: 0 0.25rem;
-  button {
+  .todoExpandBtn {
     border-style: none;
     background-color: var(--fg300);
     color: var(--bg950); /*ios safari does not default to black for button text*/
   }
-  .todoTitle {
+  .todoTitleInput {
     flex-basis: 75%;
     background-color: var(--fg300);/*for dev*/
   }
-  .todoNotes {
+  .todoNotesInput {
     flex-basis: 75%;
     margin: 0 auto 0.25rem;
     display: block;
     background-color: var(--fg300);/*for dev*/
   }
-  .completionBox {
+  .completionBoxInput {
     width: 2rem;
     height: 2rem;
     accent-color: var(--fg400);
     cursor: pointer;
   }
-  .completionBox::before { /*checkbox inputs styling overlay. first 3 props needed, plus :checked::before rule after*/
+  .completionBoxInput::before { /*checkbox inputs styling overlay. first 3 props needed, plus :checked::before rule after*/
     content: "";
     display: block;
     height: 100%;
@@ -119,10 +118,10 @@ body {
     border-radius: 2px; /* round overlay to match*/
   }
   /* Adjust the opacity of the pseudo-element when the checkbox is checked */
-  .completionBox:checked::before {
+  .completionBoxInput:checked::before {
     display: none; /* remove pseudo-element when checked */
   }
-  .dueDateTime {
+  .dueDateTimeInput {
     flex-basis: 42%;
   }
   .prioritySelect {
