@@ -68,8 +68,8 @@ const renderProject = project=> {
   projectDiv.addEventListener( 'click' , e=>{
     e.stopPropagation();
     if ( e.target.tagName === 'BUTTON' && e.target.dataset.todoId ) { //handle todo expansion button clicks
-      // lg('clicked: ' + e.target.outerHTML ); //very nice for console
-      
+      // lg('clicked: ' + e.target.outerHTML ); //very nice output of element in question for console
+
     }
   })
 }
