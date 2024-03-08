@@ -63,15 +63,26 @@ const renderProject = project=> {
   //fill project and its parent
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
   document.querySelector('body').append( projectDiv );
+  //add event listeners in other module
+  addProjectListeners( projectDiv );
+}
 
-  //add event listeners to each project that use bubbling of events from children
-  projectDiv.addEventListener( 'click' , e=>{
+//add event listeners to each project that use bubbling of events from children
+const addProjectListeners = projectDiv=> {
+  //if listener removal is needed in future, make an AbortController here and pass its signal in the addEventListener options
+  projectDiv.addEventListener( 'click' , e=> {
     e.stopPropagation();
-    if ( e.target.tagName === 'BUTTON' && e.target.dataset.todoId ) { //handle todo expansion button clicks
-      // lg('clicked: ' + e.target.outerHTML ); //very nice output of element in question for console
-
+    //handle todo expansion button clicks
+    if ( e.target.tagName === 'BUTTON' && e.target.dataset.todoId ) {
+      const btn = e.target;
+      lg('clicked: ' + btn.outerHTML ); //very nice output of element in question for console
+      btn.textContent = btn.textContent === '▼' ? '▲' : '▼'; //visuals, ooh.
+      //iterate through all elements in a todo and give some a hiding class
+      Array.from(btn.parentElement.children).forEach( (element,i)=>{
+        if (i>2) { element.classList.toggle('noDisplay') }
+      } );
     }
-  })
+  });
 }
 
 //todo objects
@@ -116,20 +127,19 @@ const renderTodos = ( project, todosWrap )=> {
     completionBox.setAttribute('type','checkbox');
     completionBox.checked = todo.getCompletedState();
     const todoNotes = document.createElement('input');
-    todoNotes.className = 'todoNotes';
+    todoNotes.className = 'todoNotes noDisplay';
     todoNotes.placeholder = todo.getNotes();
     //todo due date/time picker. need to call setDueDate()
     //uses: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
     const dueDateTime = document.createElement('input');
-    dueDateTime.className = 'dueDateTime';
+    dueDateTime.className = 'dueDateTime noDisplay';
     dueDateTime.setAttribute('type', 'datetime-local');
-
     //date/time pick testing
     //lg( new Date().toISOString().slice(0,16) ); //YYYY-MM-DDThh:mm format string is the value of <input type="datetime-local">
 
     //todo priority selector element
     const prioritySelect = document.createElement('select');
-    prioritySelect.className = 'prioritySelect';
+    prioritySelect.className = 'prioritySelect noDisplay';
     const highOption = document.createElement('option');
     highOption.value = 'high';
     highOption.text = 'high';

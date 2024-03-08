@@ -53,12 +53,13 @@ body {
   input {
     width: 100%;
     font-size: 1.25rem;
-    background-color: var(--fg100);
+    background-color: var(--fg50);
     cursor: pointer;
     margin: 0.25rem 0;
+    border-style: none;
   }
   input::placeholder {
-    color: var(--fg400);
+    color: var(--fg200);
   }
   .projectBtnsWrap{
     display: flex;
@@ -108,5 +109,8 @@ body {
   }
   .prioritySelect {
     width: 4.75rem;
+  }
+  .noDisplay {
+    display: none;
   }
 }
