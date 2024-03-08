@@ -109,13 +109,10 @@ const addProjectListeners = (projectWrap, project)=> {
     if ( e.target.className === 'todoExpandBtn' ) {
       const todo = project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId);
       e.target.textContent = e.target.textContent === '▼' ? '▲' : '▼';
-      //iterate through all elements in a todo and give some a hiding class
       Array.from(e.target.parentElement.children).forEach( (elem,i)=> {
-        if (i>2) { elem.classList.toggle('noDisplay') }
+        i>2 && ( elem.classList.toggle('noDisplay') )// hide unecessary children
       } );
-      // lg( 'clicked expansion button for todo: ' + e.target.dataset.todoId )
       todo.setOpenState( todo.getOpenState() ? false : true );
-      // lg( 'new todo open state:' + todo.getOpenState() );
     }
 
     // Handle clicks on completion checkbox inputs to toggle completed states of todos
@@ -148,22 +145,16 @@ const addProjectListeners = (projectWrap, project)=> {
 
     //handle project's title edits
     if ( e.target.className === 'projectTitleInput' ) {
-      // lg( 'old project title: ' + project.getTitle() ); //get from 'free variable' of getTitle() closure
       project.setTitle(e.target.value); //set 'free variable' of setTitle() closure
-      // lg( 'new project title: ' + project.getTitle() );
 
-      //update localStorage...
-      storeProjectSeeds();
+      storeProjectSeeds(); //update localStorage
     }
 
     //handle project's description edits
     if ( e.target.className === 'projectDescriptionInput' ) {
-      // lg('old project description: ' + project.getDescription());
       project.setDescription(e.target.value);
-      // lg('new project description: ' + project.getDescription());
 
-      //update localStorage...
-      storeProjectSeeds();
+      storeProjectSeeds(); //update localStorage
     }
 
     //handle individual todo title edits
@@ -182,14 +173,14 @@ const addProjectListeners = (projectWrap, project)=> {
     if ( e.target.className === 'todoNotesInput' ) {
       //find the correct todo object, set its new notes string
       project.getTodosArr()
-      .find( todo=> todo.getTodoID() === +e.target.dataset.todoId ) //make sure the data attribute exists!!
+      .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setNotes(e.target.value);
       // lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
     }
 
   } );
 
-  //handle the bubbling change events when inputs lose focus
+  //handle the bubbling change events, usually when inputs lose focus
   projectWrap.addEventListener( 'change' , e=> {
     e.stopPropagation();
     // lg('this changed value: ' + e.target.outerHTML ); // nice output of element in console
@@ -234,7 +225,8 @@ const makeTodo = id=> {
       notes, notesPlaceholder = '...add notes',
       dueDateTime, priorityLevel = 'normal', completedState = false,
       openState = false;
-  //fn to toggle completedState of a todo instance. somehow call from a checkbox event listener, maybe choose the todo object using the id from a data-* attribute?
+
+  //to toggle completedState of a todo instance
   const toggleCompletedState = ()=> completedState = completedState ? false : true;
 
   return { //public exposure
@@ -355,7 +347,6 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
   } );
   localStorage.setItem( 'projectSeedsArr', JSON.stringify( projectSeedsArr ) );
   // lg( projectSeedsArr ); //testing
-  // lg( 'localStorage entries:\n' + localStorage.length + '\nobject\'s JSON string in \'projectSeedsArr\' key:\n' + localStorage.getItem('projectSeedsArr') );
   // lg( JSON.parse( localStorage.getItem('projectSeedsArr') ) ); //testing
 
 }
