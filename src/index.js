@@ -1,7 +1,5 @@
 /* Next task:
-- make change evt listener for prioritySelect to: add priority color visualization and ordering (maybe use array sort?) functionality. red/yellow/green = high/norm/low colors, set left and right borders to show this.
-
--[ongoing issue to check] after editing a todo, if a rerender occurs, logic is needed to render the actual data for the todo. other parts in a todo need this logic check too, maybe make it a function?
+- adjust todo rendering to read todo's priority and show red/yellow/green = high/norm/low colors on left and right borders. Also implement ordering; maybe use array sort?
 
 - do not auto close todo's when adding new or clearing done ones
 - new projects should render with at least one todo
@@ -158,7 +156,6 @@ const addProjectListeners = (projectWrap, project)=> {
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId ) //make sure the data attribute exists!!
       .setNotes(e.target.value);
-      //testing
       lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
     }
 
@@ -184,14 +181,17 @@ const addProjectListeners = (projectWrap, project)=> {
     }
 
     //handle changes to selects with class 'prioritySelect'
-    
+    if ( e.target.className === 'prioritySelect' ) {
+      lg('old todo priority:' + project.getTodosArr()
+      .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
 
+      project.getTodosArr()
+      .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
+      .setPriorityLevel(e.target.value); // target.value is 'high'/'normal'/'low'
 
-
-
-
-
-
+      lg('new todo priority:' + project.getTodosArr()
+      .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
+    }
 
   } );
 
@@ -218,7 +218,7 @@ const makeTodo = id=> {
     getDueDateTime: ()=> dueDateTime,
     setDueDateTime: newDueDateTime=> dueDateTime = newDueDateTime,
     getPriorityLevel: ()=> priorityLevel,
-    setPriorityLevel: newLevel=> priorityLevel = newLevel, // 'high'/normal/low
+    setPriorityLevel: newLevel=> priorityLevel = newLevel, // pass in 'high'/'normal'/'low'
     getCompletedState: ()=> completedState,
     toggleCompletedState,
   }
@@ -246,6 +246,7 @@ const appendTodos = ( project, todosWrap )=> {
     const dueDateTimeInput = document.createElement('input');
     dueDateTimeInput.setAttribute('type', 'datetime-local');
     todo.getDueDateTime() && ( dueDateTimeInput.value = todo.getDueDateTime() ) //short circuiting logical AND
+
     //todo priority selector element
     const prioritySelect = document.createElement('select');
     const highOption = document.createElement('option');
@@ -254,12 +255,22 @@ const appendTodos = ( project, todosWrap )=> {
     const normalOption = document.createElement('option');
     normalOption.value = 'normal';
     normalOption.text = 'normal';
-    normalOption.selected = true; //default. or assign an option as selected using todo.getPriorityLevel()
+    normalOption.selected = true; //default. or assign different selected option checking todo.getPriorityLevel()
     const lowOption = document.createElement('option');
     lowOption.value = 'low';
     lowOption.text = 'low';
     const priorityOptGroup = document.createElement('optgroup'); //labeled wrapper
     priorityOptGroup.label = 'Priority:';
+
+
+
+
+
+
+
+
+
+
 
     //set class/data attributes for elems
     Object.entries( //object of elems to set attributes on goes here
@@ -329,10 +340,6 @@ const appFlow = ( ()=> {
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   }
 
-  //todo objects functionality testing
-  // lg('setting a todo\'s priority level and logging all for comparison..')
-  // projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
-  // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
   return {
     getProjectsArr: ()=> projectsArr,
     removeProject

@@ -11,8 +11,8 @@ button { display: block; cursor: pointer; }
 :root{
   --black: hsl(0, 0%, 0%);
   --white: hsl(0, 0%, 100%);
-  /* tailwind blue palette based, then hue shifted ... CHANGE TO SKY PALETTE IF YOU WANT TO MATCH TICTACTOE PROJECT */
-  /* 
+  /* tailwind blue palette based, then hue shifted ... CHANGE TO SKY PALETTE to OCD level MATCH TICTACTOE PROJECT */
+  /*
   --bg950: hsl(199, 91%, 9%);
   --bg900: hsl(197, 86%, 16%);
   --bg800: hsl(196, 88%, 20%);
@@ -26,7 +26,7 @@ button { display: block; cursor: pointer; }
   --fg50:  hsl(185, 81%, 96%);
   */
 
-  /*brown theme (for dev)*/
+  /*brown theme (for dev) */
   --bg950: hsl(33, 91%, 9%);
   --bg900: hsl(31, 86%, 16%);
   --bg800: hsl(30, 88%, 20%);
