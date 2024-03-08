@@ -1,7 +1,6 @@
 /*-- Next tasks:
--implement use of projectSeedsArr in localStorage progress: need to set project title/description/todoCreationID into local storage when they are changed.
-
--implement todos into localStorage saving too!!
+-implement use of projectSeedsArr in localStorage progress:
+need to implement todos into localStorage saving using storeTodoSeeds fn
 
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
@@ -28,11 +27,10 @@ const makeProject = (projectID, projectSeed)=> {
       todoCreationID = 0, todosArr = [];
 
   //overwrite from seed if it is passed in as an argument
-  if ( projectSeed ){
+  if ( projectSeed ) {
     //overwrite variables using object destructuring from the projectSeed obj.
     //Parenthesis force the JS engine to evaluate as an expression including the object pattern to destructure, instead of a block statement.
     ( { title, description, todoCreationID } = projectSeed );
-
   }
 
   const addTodo = ()=> { //keep here and use closure.
@@ -136,6 +134,9 @@ const addProjectListeners = (projectWrap, project)=> {
       project.addTodo();
       appendTodos( project, todosWrap );
       // lg( project.getTodosArr() )//testing
+
+      //update localStorage...
+      storeProjectSeeds();
     }
 
   } );
@@ -150,6 +151,9 @@ const addProjectListeners = (projectWrap, project)=> {
       // lg( 'old project title: ' + project.getTitle() ); //get from 'free variable' of getTitle() closure
       project.setTitle(e.target.value); //set 'free variable' of setTitle() closure
       // lg( 'new project title: ' + project.getTitle() );
+
+      //update localStorage...
+      storeProjectSeeds();
     }
 
     //handle project's description edits
@@ -157,6 +161,9 @@ const addProjectListeners = (projectWrap, project)=> {
       // lg('old project description: ' + project.getDescription());
       project.setDescription(e.target.value);
       // lg('new project description: ' + project.getDescription());
+
+      //update localStorage...
+      storeProjectSeeds();
     }
 
     //handle individual todo title edits
@@ -167,6 +174,8 @@ const addProjectListeners = (projectWrap, project)=> {
         .setTitle(e.target.value);
       //testing
       // lg( 'new todo title:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getTitle() );
+      lg('todo title input lost focus.here is current projectsArr:')
+      lg( appFlow.getProjectsArr() )
     }
 
     //handle individual todo notes edits
@@ -321,8 +330,8 @@ const appendTodos = ( project, todosWrap )=> {
   } );
 }
 
-//make seeds of data projects need to be rebuilt, store them in localStorage
-const storeProjectSeeds = projectsArr=> {
+//make seeds of data projects need to be rebuilt, store them in localStorage.
+const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
   const projectSeedsArr = [];
   projectsArr.forEach( project=> {
     //make a seed data object (of JSON formatted data strings) from project to se/deserialize.
@@ -331,9 +340,11 @@ const storeProjectSeeds = projectsArr=> {
     Object.keys(project)
     .filter( key=> ['getProjectID','getTitle','getDescription','getTodoCreationID'].includes(key) )
     .forEach( key=> {
-      //getTitle() and getDescription() return undefined; set their seed object values as empty strings for JSON serialization later
-      if ( key === 'getTitle' || key === 'getDescription' ) {
-        projectSeed[ key[3].toLowerCase() + key.slice(4) ] = '';
+      if ( key === 'getTitle' ) {
+        projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project.getTitle() ? project.getTitle() : ''; //set empty string for JSON if undefined is returned
+      }
+      if ( key === 'getDescription' ) {
+        projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project.getDescription() ? project.getDescription() : '';
       }
       else {
         //compute property names for the projectSeed object and method names to call from the source object in square brackets:
@@ -348,6 +359,15 @@ const storeProjectSeeds = projectsArr=> {
   // lg( JSON.parse( localStorage.getItem('projectSeedsArr') ) ); //testing
 
 }
+//make seeds of individual todos in projects to store in localStorage. ...start with making an object for each project that hold an array of todos data objects for each todo
+const storeTodoSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
+  
+
+
+
+
+}
+
 
 // lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
 
@@ -363,8 +383,11 @@ const appFlow = ( ()=> {
     projectCreationID++;
     projectsWrap.innerHTML = ''; //wipe container first
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
-    lg( 'project added, new projectsArr: ' );
-    lg( projectsArr );
+    // lg( 'project added, new projectsArr: ' );
+    // lg( projectsArr );
+
+    //update localStorage...
+    storeProjectSeeds();
   } );
   const projectsWrap = document.createElement('div');
   projectsWrap.className = 'projectsWrap';
@@ -390,7 +413,6 @@ const appFlow = ( ()=> {
     projectCreationID++;
     projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
     projectCreationID++;
-    
     //first run: first project should have one todo
     projectsArr[0].addTodo();
   }
@@ -407,8 +429,8 @@ const appFlow = ( ()=> {
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   }
   
-  //seed projects objects into localStorage. fn needs access to projects
-  storeProjectSeeds( projectsArr );
+  //store project seed objects in localStorage
+  storeProjectSeeds(projectsArr); //projectsArr needs to be passed in first time.
 
   return {
     getProjectsArr: ()=> projectsArr,
