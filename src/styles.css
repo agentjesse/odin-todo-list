@@ -155,13 +155,13 @@ body {
 }
 .normalPriority {
   box-shadow: inset 16px 0 8px -8px var(--yellow), /*left inset shadow*/
-              inset -16px 0 8px -8px var(--yellow); /*right inset shadow*/
+  inset -16px 0 8px -8px var(--yellow); /*right inset shadow*/
 }
 .highPriority {
   box-shadow: inset 16px 0 8px -8px var(--red), /*left inset shadow*/
-              inset -16px 0 8px -8px var(--red); /*right inset shadow*/
+  inset -16px 0 8px -8px var(--red); /*right inset shadow*/
 }
 .lowPriority {
   box-shadow: inset 16px 0 8px -8px var(--green), /*left inset shadow*/
-              inset -16px 0 8px -8px var(--green); /*right inset shadow*/           
+  inset -16px 0 8px -8px var(--green); /*right inset shadow*/           
 }

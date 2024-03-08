@@ -1,11 +1,6 @@
 /* Next task:
-- do not auto close todo's when adding new or clearing done ones
-
-
-
-
-
 - new projects should render with at least one todo
+
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
@@ -93,22 +88,22 @@ const addProjectListeners = (projectWrap, project)=> {
       appFlow.removeProject( e.target.dataset.projectId );
     }
 
-    //handle todo expansion button clicks
+    //handle todo expansion button clicks, store open state for rerenders...
     if ( e.target.className === 'todoExpandBtn' ) {
+      const todo = project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId);
       e.target.textContent = e.target.textContent === '▼' ? '▲' : '▼';
       //iterate through all elements in a todo and give some a hiding class
       Array.from(e.target.parentElement.children).forEach( (elem,i)=>{
         if (i>2) { elem.classList.toggle('noDisplay') }
       } );
+      lg( 'clicked expansion button for todo: ' + e.target.dataset.todoId )
+      todo.setOpenState( todo.getOpenState() ? false : true );
+      lg( 'new todo open state:' + todo.getOpenState() );
     }
 
-    //handle clicks on completion checkbox inputs to toggle completed states of todos
-    if ( e.target.className === 'completionBoxInput' ) {
-      project.getTodosArr().forEach( todo=> { //find the todo to toggle its completed state
-        if ( todo.getTodoID() === +e.target.dataset.todoId ) {
-          todo.toggleCompletedState();
-        }
-      } );
+    // Handle clicks on completion checkbox inputs to toggle completed states of todos
+    if (e.target.classList.contains('completionBoxInput')) {
+      project.getTodosArr().find(todo => todo.getTodoID() === +e.target.dataset.todoId).toggleCompletedState();
     }
 
     //handle clicks on clear done todos buttons
@@ -211,7 +206,8 @@ const addProjectListeners = (projectWrap, project)=> {
 const makeTodo = id=> {
   let title, titlePlaceholder = '...Untitled Todo',
       notes, notesPlaceholder = '...add notes',
-      dueDateTime, priorityLevel = 'normal', completedState = false;
+      dueDateTime, priorityLevel = 'normal', completedState = false,
+      openState = false;
   //fn to toggle completedState of a todo instance. somehow call from a checkbox event listener, maybe choose the todo object using the id from a data-* attribute?
   const toggleCompletedState = ()=> completedState = completedState ? false : true;
 
@@ -229,6 +225,8 @@ const makeTodo = id=> {
     setPriorityLevel: newLevel=> priorityLevel = newLevel, // pass in 'high'/'normal'/'low'
     getCompletedState: ()=> completedState,
     toggleCompletedState,
+    getOpenState: ()=> openState,
+    setOpenState: newOpenState=> openState = newOpenState
   }
 }
 //Todo render module: appends todo elements to the wrapper using the todos array from project
@@ -290,7 +288,9 @@ const appendTodos = ( project, todosWrap )=> {
     ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
       elem.classList.add( key ); //set class from element reference name
       if ( ['todoNotesInput', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { //add extra classes to specific elems
-        elem.classList.add('noDisplay');
+        if ( !todo.getOpenState() ){ 
+          elem.classList.add('noDisplay');
+        }
       }
       elem.setAttribute('data-todo-id', `${ todo.getTodoID() }`); //set identifier
     } );
