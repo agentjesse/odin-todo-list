@@ -35,6 +35,7 @@ const makeProject = projectID=> {
     getDescription: ()=> description,
     setDescription: newDescription=> description = newDescription,
     getDescriptionPlaceholder: ()=> descriptionPlaceholder,
+    getTodoCreationID: ()=> todoCreationID,
     getTodosArr: ()=> todosArr,
     addTodo,
     removeCompletedTodos,
@@ -302,14 +303,36 @@ const appendTodos = ( project, todosWrap )=> {
   } );
 }
 
+//make seeds of data projects need to be rebuilt, store them in localStorage
+const seedProjectObjects = projectsArr=> {
+  localStorage.setItem( 'user', JSON.stringify( {fullName:"Jerry Smith"} ) );
+  lg('localStorage entries: '+localStorage.length+'. object\'s JSON string in \'user\' key: '+localStorage.getItem('user'));
+  lg( JSON.parse( localStorage.getItem('user') ) );
+  lg('==========ignore testing logs above, they will be commented out===========');
+
+  const project = projectsArr[0]
+  const seed = {} //make a seed object of data from each project
+  Object.keys(project).forEach( key=> { //add properties to the seed
+    if ( key.startsWith('get') ) {
+      //compute property names for the seed object and method names to call from the source object in square brackets:
+      seed[ key[3].toLowerCase() + key.slice(4) ] = project[key]();
+    }
+  } );
+  lg( seed );
+  
+
+
+
+
+
+}
+
 // lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
 
 //application flow has an arrow function IIFE that returns an object (with state) to access via appFlow variable
 const appFlow = ( ()=> {
-  //store projects in an array. new ones made with an ID that is incremented
   let projectsArr = [], projectCreationID = 0;
-  //make base elements
-  //button to add a project to projects wrapper
+  //base elements
   const addProjectBtn = document.createElement('button');
   addProjectBtn.className = 'addProjectBtn';
   addProjectBtn.textContent = 'New Project';
@@ -319,21 +342,21 @@ const appFlow = ( ()=> {
     projectsWrap.innerHTML = ''; //wipe container first
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   } );
-  document.querySelector('body').append( addProjectBtn );
   const projectsWrap = document.createElement('div');
   projectsWrap.className = 'projectsWrap';
-  document.querySelector('body').append( projectsWrap );
+  //append base elements
+  document.querySelector('body').append( addProjectBtn, projectsWrap );
 
-  //if local storage is devoid of projects...
+  //if local storage is devoid of project seeds...
   //localStorage checking logic goes here...
   //...make a new one with ID from a counter, push it in, and increment ID counter:
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
-  projectsArr.push( makeProject(projectCreationID) ); //empty project, looks nice
+  projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
   projectCreationID++;
   //first run: project[0] in projectArr should have one todo
   projectsArr[0].addTodo();
-  //render each project
+  //render all projects
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
 
   //remove project from projectsArr via ID ...refactor out for SOLID
@@ -344,18 +367,9 @@ const appFlow = ( ()=> {
     projectsWrap.innerHTML = '';
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   }
-
-  //save projects to localStorage. Instead of deep cloning, need to save only necessary objects and use them to build new ones after.
-  const testPerson = {fullName:"Jerry Smith"};
-  localStorage.setItem( 'user', JSON.stringify( testPerson ) );
-  lg('localStorage entries: '+localStorage.length+'. object\'s JSON string in \'user\' key: '+localStorage.getItem('user'));
-  lg( JSON.parse( localStorage.getItem('user') ) );
-  lg('==========ignore testing logs above, they will be commented out===========');
-  //so...all your project objects are pretty much filled with closure functions...now what..
-  lg( JSON.stringify( projectsArr ) );
   
-
-
+  //call a seedObjectsInLocalStorage function with access to them
+  seedProjectObjects( projectsArr );
 
   return {
     getProjectsArr: ()=> projectsArr,
