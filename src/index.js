@@ -1,7 +1,9 @@
 /* Next task:
-- implement todo priority ordering; maybe use array sort?
-
 - do not auto close todo's when adding new or clearing done ones
+
+
+
+
 
 - new projects should render with at least one todo
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
@@ -298,21 +300,6 @@ const appendTodos = ( project, todosWrap )=> {
     prioritySelect.append( priorityOptGroup );
     todoWrap.append(todoExpandBtn, todoTitleInput, completionBoxInput, todoNotesInput, dueDateTimeInput, prioritySelect);
     todosWrap.append( todoWrap )
-    //sort each todoWrap div in the todoswrap by priority after they are added...
-    lg( todosWrap.childNodes )
-
-
-
-
-
-
-
-    
-
-
-
-
-
   } );
 }
 
