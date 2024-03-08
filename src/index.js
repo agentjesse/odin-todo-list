@@ -1,5 +1,7 @@
 /*-- Next tasks:
--currently on textarea-refactor branch!!! careful with git commands. need to convert all input type texts (project/todo descriptions/notes) into textareas and make an auto resizing fn so they expand vertically when the text wraps. check yahoo email for example code.
+-currently on textarea-refactor branch!!! careful with git commands.
+
+-enabling wrapping for DueDateTime inputs
 
 --- Optional tasks:
 -refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
@@ -60,15 +62,15 @@ const makeProject = (projectID, projectSeed)=> {
 const appendProject = ( project, projectsWrap )=> {
   //make each project div's children. do any repetitive attribute setting later
   const projectWrap = document.createElement('div');
-  const projectTitleInput = document.createElement('input');
-  // lg( 'projectTitleInput:' )
-  // lg( projectTitleInput )
-  if ( project.getTitle() ){  projectTitleInput.value = project.getTitle() }
-      else { projectTitleInput.placeholder = project.getTitlePlaceholder() }
-  const projectDescriptionInput = document.createElement('input');
-  if ( project.getDescription() ){  projectDescriptionInput.value = project.getDescription() }
-      else { projectDescriptionInput.placeholder = project.getDescriptionPlaceholder() }
-  // projectDescriptionInput.placeholder = `${ project.getDescriptionPlaceholder() }`;
+  
+  const projectTitleTextArea = document.createElement('textarea');
+  projectTitleTextArea.placeholder = project.getTitlePlaceholder(); //always set this
+  project.getTitle() && ( projectTitleTextArea.value = project.getTitle() );
+
+  const projectDescriptionTextArea = document.createElement('textarea');
+  projectDescriptionTextArea.placeholder = project.getDescriptionPlaceholder(); //always set this
+  project.getDescription() && ( projectDescriptionTextArea.value = project.getDescription() );
+
   const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
   removeProjectBtn.textContent = 'remove project ❌';
   const clearDoneTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
@@ -76,22 +78,34 @@ const appendProject = ( project, projectsWrap )=> {
   const addTodoBtn = document.createElement('button');
   addTodoBtn.textContent = 'add todo➕';
   const projectBtnsWrap = document.createElement('div');
+
   const todosWrap = document.createElement('div');
   //set class/data attributes to elems from their reference names via the keys of an object. Object.entries(object) returns an array of [key,value] pair arrays.
   Object.entries( //elems obj goes here
-    { projectWrap,projectTitleInput,projectDescriptionInput,removeProjectBtn,
+    { projectWrap,projectTitleTextArea,projectDescriptionTextArea,removeProjectBtn,
     clearDoneTodosBtn,addTodoBtn,projectBtnsWrap,todosWrap }
   ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
     elem.className = key; //set class name
     elem.setAttribute( 'data-project-id', project.getProjectID() ); //set identifier
+    //change textarea elems to start with 1 row
+    key.includes('TextArea') && ( elem.rows = 1 );
   } );
   //append children to their wrappers
   projectBtnsWrap.append( removeProjectBtn, clearDoneTodosBtn, addTodoBtn );
   appendTodos( project, todosWrap );
-  projectWrap.append(projectTitleInput, projectDescriptionInput, projectBtnsWrap, todosWrap);
+  projectWrap.append(projectTitleTextArea, projectDescriptionTextArea, projectBtnsWrap, todosWrap);
   projectsWrap.append( projectWrap );
+  // after textarea elements are appended, call the auto height resizer for the ones displayed. call resizer for textarea with display: none; when shown
+  document.querySelectorAll('textarea:not(.noDisplay)')
+  .forEach( elem=> textAreaResize(elem) );
   //add event listeners
   addProjectListeners( projectWrap,project );
+}
+
+// auto height resizing for textarea elements to their wrapping content. located here for access from other fns
+const textAreaResize = textarea=> {
+  textarea.style.height = 'auto'; //resets height to handle content decreases
+  textarea.style.height = (textarea.scrollHeight) + 'px';
 }
 
 //add event listeners to each projectWrap that use bubbling of events from children
@@ -147,53 +161,52 @@ const addProjectListeners = (projectWrap, project)=> {
 
   } );
 
-  //handle the bubbling focusout events when inputs lose focus
+  //handle the bubbling focusout events when elements lose focus
   projectWrap.addEventListener( 'focusout' , e=> {
     e.stopPropagation();
     // lg('this lost focus: ' + e.target.outerHTML ); // nice output of element in console
 
     //handle project's title edits
-    if ( e.target.className === 'projectTitleInput' ) {
+    if ( e.target.className === 'projectTitleTextArea' ) {
       project.setTitle(e.target.value); //set 'free variable' of setTitle() closure
 
+      textAreaResize(e.target); //auto resizing
       storeProjectSeeds(); //update localStorage
     }
 
     //handle project's description edits
-    if ( e.target.className === 'projectDescriptionInput' ) {
+    if ( e.target.className === 'projectDescriptionTextArea' ) {
       project.setDescription(e.target.value);
 
+      textAreaResize(e.target); //auto resizing
       storeProjectSeeds(); //update localStorage
     }
 
     //handle individual todo title edits
-    if ( e.target.className === 'todoTitleInput' ) {
+    if ( e.target.className === 'todoTitleTextArea' ) {
       //find the correct todo object, set its new title string
       project.getTodosArr()
         .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
         .setTitle(e.target.value);
       
+      textAreaResize(e.target);
       storeProjectSeeds(); //update localStorage
-      //testing
-      // lg( 'new todo title:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getTitle() );
-      // lg('todo title input lost focus. here is current projectsArr:')
-      // lg( appFlow.getProjectsArr() )
     }
 
     //handle individual todo notes edits
-    if ( e.target.className === 'todoNotesInput' ) {
+    if ( e.target.className === 'todoNotesTextArea' ) {
       //find the correct todo object, set its new notes string
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setNotes(e.target.value);
 
+      textAreaResize(e.target);
       storeProjectSeeds(); //update localStorage
-      // lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
     }
 
   } );
 
-  //handle the bubbling change events, usually when inputs lose focus
+  //handle the bubbling change events, usually when elements lose focus
   projectWrap.addEventListener( 'change' , e=> {
     e.stopPropagation();
     // lg('this changed value: ' + e.target.outerHTML );
@@ -275,18 +288,23 @@ const appendTodos = ( project, todosWrap )=> {
   project.getTodosArr().forEach( todo=> {
     //make the todo's html elements.
     const todoWrap = document.createElement('div');
+
     const todoExpandBtn = document.createElement('button');
     if ( !todo.getOpenState() ) { todoExpandBtn.textContent = '▼' }
       else { todoExpandBtn.textContent = '▲' }
-    const todoTitleInput = document.createElement('input')
-    if ( todo.getTitle() ) {  todoTitleInput.value = todo.getTitle() }
-      else { todoTitleInput.placeholder = todo.getTitlePlaceholder() }
+
+    const todoTitleTextArea = document.createElement('textarea');
+    todoTitleTextArea.placeholder = todo.getTitlePlaceholder(); //always set
+    todo.getTitle() && ( todoTitleTextArea.value = todo.getTitle() );
+
     const completionBoxInput = document.createElement('input'); //completed state checkbox
     completionBoxInput.setAttribute('type','checkbox');
     completionBoxInput.checked = todo.getCompletedState();
-    const todoNotesInput = document.createElement('input');
-    if ( todo.getNotes() ) { todoNotesInput.value = todo.getNotes() }
-      else { todoNotesInput.placeholder = todo.getNotesPlaceholder() }
+
+    const todoNotesTextArea = document.createElement('textarea');
+    todoNotesTextArea.placeholder = todo.getNotesPlaceholder(); //always set
+    todo.getNotes() && ( todoNotesTextArea.value = todo.getNotes() )
+
     //todo due date/time picker
     const dueDateTimeInput = document.createElement('input');
     dueDateTimeInput.setAttribute('type', 'datetime-local');
@@ -322,22 +340,24 @@ const appendTodos = ( project, todosWrap )=> {
 
     //set class/data attributes for elems
     Object.entries( //object of elems to set attributes on goes here
-      { todoWrap, todoExpandBtn, todoTitleInput,completionBoxInput,
-      todoNotesInput,dueDateTimeInput,prioritySelect }
+      { todoWrap, todoExpandBtn, todoTitleTextArea,completionBoxInput,
+      todoNotesTextArea,dueDateTimeInput,prioritySelect }
     ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
       elem.classList.add( key ); //set class from element reference name
-      if ( ['todoNotesInput', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { //add extra classes to specific elems
+      if ( ['todoNotesTextArea', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { //add extra classes to specific elems
         if ( !todo.getOpenState() ){ 
           elem.classList.add('noDisplay');
         }
       }
+      //change textarea elems to start with 1 row
+      key.includes('TextArea') && ( elem.rows = 1 );
       elem.setAttribute('data-todo-id', `${ todo.getTodoID() }`); //set identifier
     } );
     
     //append children to their wrappers
     priorityOptGroup.append( highOption, normalOption, lowOption );
     prioritySelect.append( priorityOptGroup );
-    todoWrap.append(todoExpandBtn, todoTitleInput, completionBoxInput, todoNotesInput, dueDateTimeInput, prioritySelect);
+    todoWrap.append(todoExpandBtn, todoTitleTextArea, completionBoxInput, todoNotesTextArea, dueDateTimeInput, prioritySelect);
     todosWrap.append( todoWrap )
   } );
 }
@@ -439,7 +459,6 @@ const appFlow = ( ()=> {
       projectsArr.push( makeProject( projectSeed.projectID, projectSeed ) );
       projectCreationID = projectSeed.projectID + 1;//one higher than last added project id
     } );
-    // lg( 'new projectCreationID: ' + projectCreationID );
   }
   else {
     lg( 'no useful localStorage data found, starting fresh...' );
