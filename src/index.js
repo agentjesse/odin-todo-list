@@ -30,6 +30,7 @@ const makeProject = projectID=> {
   return { //public exposure. projectID is passed in and exposed, unmodified
     getProjectID: ()=> projectID,
     getTitle: ()=> title,
+    setTitle: (newTitle)=> title = newTitle,
     getTitlePlaceholder: ()=> titlePlaceholder,
     getDescription: ()=> description,
     getDescriptionPlaceholder: ()=> descriptionPlaceholder,
