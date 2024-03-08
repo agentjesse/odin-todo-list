@@ -3,7 +3,7 @@ styles; set buttons to display block; set base (pre UA stylesheet) font size; */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
 input, button, textarea, select { font: inherit; }
-button { display: block; }
+button { display: block; cursor: pointer; }
 :root{ font-size: 16px; }  /*chrome default*/
 /* imported google fonts examples */
 /* .roboto { font-family: "Roboto"; font-weight: 400,500; font-style: normal; } */
@@ -54,7 +54,7 @@ body {
     width: 100%;
     font-size: 1.25rem;
     background-color: var(--fg50);
-    cursor: pointer;
+    cursor: text; /* for datetime-local */
     margin: 0.25rem 0;
     border-style: none;
   }
@@ -75,7 +75,6 @@ body {
       box-shadow: 0 0 2px 2px var(--bg600);
     }
     button:hover{
-      cursor: pointer;
       background-color: var(--fg50);
     }
   }
@@ -110,6 +109,7 @@ body {
   }
   .prioritySelect {
     width: 4.75rem;
+    cursor: pointer;
   }
   .noDisplay {
     display: none;

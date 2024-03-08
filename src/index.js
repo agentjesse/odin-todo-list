@@ -33,13 +33,14 @@ const makeProject = projectID=> {
     setTitle: (newTitle)=> title = newTitle,
     getTitlePlaceholder: ()=> titlePlaceholder,
     getDescription: ()=> description,
+    setDescription: (newDescription) => description = newDescription,
     getDescriptionPlaceholder: ()=> descriptionPlaceholder,
     getTodosArr: ()=> todosArr,
     addTodo,
     removeCompletedTodos,
   }
 }
-//project rendering module
+//project rendering module, called from appFlow module with project obj
 const renderProject = project=> {
   //make each project div's title/desc/buttons/etc. children
   const projectDiv = document.createElement('div');
@@ -51,13 +52,13 @@ const renderProject = project=> {
   descriptionInput.placeholder = `${ project.getDescriptionPlaceholder() }`;
   const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
   removeProjectBtn.className = 'removeProjectBtn';
-  removeProjectBtn.textContent = 'remove project';
+  removeProjectBtn.textContent = 'remove project ❌';
   const removeCompletedTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
   removeCompletedTodosBtn.className = 'removeCompletedTodosBtn';
-  removeCompletedTodosBtn.textContent = 'remove completed';
+  removeCompletedTodosBtn.textContent = 'clear done todos 🗑';
   const addTodoBtn = document.createElement('button'); //add todo button
   addTodoBtn.className = 'addTodoBtn';
-  addTodoBtn.textContent = 'add todo';
+  addTodoBtn.textContent = 'add todo➕';
   const projectBtnsWrap = document.createElement('div'); //btns wrapper
   projectBtnsWrap.className = 'projectBtnsWrap';
   projectBtnsWrap.append( removeProjectBtn, removeCompletedTodosBtn, addTodoBtn );
@@ -65,17 +66,17 @@ const renderProject = project=> {
   const todosWrap = document.createElement('div');
   todosWrap.className = 'todosWrap';
   renderTodos( project, todosWrap ); //fill the todos wrapper in other module, this one too busy
-  //fill project and its parent
+  //fill project and its parent with it
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
   document.querySelector('body').append( projectDiv );
+
   //add event listeners in other module
-  addProjectListeners( projectDiv );
+  addProjectListeners( projectDiv,project );
 }
 
 //add event listeners to each projectDiv that use bubbling of events from children
-const addProjectListeners = projectDiv=> {
+const addProjectListeners = (projectDiv, project)=> {
   //if listener removal is needed in future, make an AbortController here and pass its signal in the addEventListener options
-  
   projectDiv.addEventListener( 'click' , e=> {
     e.stopPropagation();
     // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
@@ -90,6 +91,12 @@ const addProjectListeners = projectDiv=> {
       } );
     }
 
+    //handle project removal with: appFlow.removeProject(project_id)
+    if ( e.target.className === 'removeProjectBtn' ) {
+      appFlow.removeProject( e.target.parentElement.parentElement.dataset.projectId );
+    }
+
+
   });
 
   //handle the bubbling focusout events when inputs lose focus
@@ -100,8 +107,17 @@ const addProjectListeners = projectDiv=> {
     //handle project's title edits
     if ( e.target.tagName === 'INPUT' && e.target.placeholder === '...Project Title' ) {
       const titleInput = e.target;
-      lg( titleInput.value )
-      
+      lg( 'old title: ' + project.getTitle() )
+      project.setTitle(titleInput.value)
+      lg( 'new title: ' + project.getTitle() )
+    }
+
+    //handle project's description edits
+    if (e.target.tagName === 'INPUT' && e.target.placeholder === '...Project Description') {
+      const descriptionInput = e.target;
+      lg('old description: ' + project.getDescription())
+      project.setDescription(descriptionInput.value)
+      lg('new description: ' + project.getDescription())
     }
 
   });
@@ -185,21 +201,21 @@ const renderTodos = ( project, todosWrap )=> {
 }
 
 
-//application start IIFE, no referencing for now so skipping assignment
-( ()=>{
-  //store projects in an array that should default to one project if the localStorage doesn't have any
-  const projectsArr = [];
-  let projectCreationID = 0;
+//application flow has an arrow function IIFE that returns an object (with state) to access via appFlow variable
+const appFlow = ( ()=> {
+  //store projects in an array. later, default to one project if the localStorage doesn't have any
+  let projectsArr = [], projectCreationID = 0;
   //if local storage is devoid of projects...
   //localStorage checking logic goes here...
   //...make a new one with ID from a counter, push it in, and increment ID counter:
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
-  projectsArr.push( makeProject(projectCreationID) );
+  projectsArr.push( makeProject(projectCreationID) ); //extra project for testing
   projectCreationID++;
 
   //todo rendering testing
   for (let runs = 1; runs<=2; runs++) { projectsArr[0].addTodo() };
+  // for (let runs = 1; runs<=1; runs++) { projectsArr[1].addTodo() };
 
   //render each project
   projectsArr.forEach( project=> renderProject(project) );
@@ -207,8 +223,16 @@ const renderTodos = ( project, todosWrap )=> {
   //save projects to localStorage....instead of deep cloning, need to save only necessary objects and use them to build new ones after. below is a useless shallow clone attempt, do not use
   // localStorage.setItem( '[TBD]projects in this device\'s localStorage: ', JSON.stringify(projectsArr) );
 
+  //remove project from projectsArr via ID
+  const removeProject = id=> {
+    //filter returns a shallow copy, use instead of a loop with in place splice
+    projectsArr = projectsArr.filter( project=> project.getProjectID() !== +id ); //unary plus for number from string
+    //removes all nodes, ok to use since non user generated code. Setting innerHTML to an empty string removes all child elements and event listeners attached to them.
+    document.querySelector('body').innerHTML = '';
+    projectsArr.forEach( project=> renderProject(project) );
+  }
 
-  //todo objects testing
+  //todo objects functionality testing
   //make some todos, remove some, then log existing ones
   // lg ( 'making 5 todos in first project...' )
   // for (let runs = 1; runs<=5; runs++) { projectsArr[0].addTodo() };
@@ -222,6 +246,11 @@ const renderTodos = ( project, todosWrap )=> {
   // lg('setting a todo\'s priority level and logging all for comparison..')
   // projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
-
-  
+  return {
+    getProjectsArr: ()=> projectsArr,
+    removeProject
+  }
 } )();
+
+
+// lg( appFlow.getProjectsArr() ) //testing
