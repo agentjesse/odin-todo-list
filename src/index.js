@@ -26,8 +26,6 @@ const makeProject = projectID=> {
         }
       }
     });
-    //after the todosArr is cleaned up, need to rerender todos...
-
   }
 
   return { //public exposure. projectID is passed in and exposed, unmodified
@@ -58,6 +56,7 @@ const renderProject = project=> {
   removeProjectBtn.textContent = 'remove project ❌';
   const removeCompletedTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
   removeCompletedTodosBtn.className = 'removeCompletedTodosBtn';
+  removeCompletedTodosBtn.setAttribute( 'data-project-id', `${ project.getProjectID() }`);
   removeCompletedTodosBtn.textContent = 'clear done todos 🗑';
   const addTodoBtn = document.createElement('button'); //add todo button
   addTodoBtn.className = 'addTodoBtn';
@@ -68,6 +67,7 @@ const renderProject = project=> {
   //todos wrapper, append todos to it
   const todosWrap = document.createElement('div');
   todosWrap.className = 'todosWrap';
+  todosWrap.setAttribute( 'data-project-id', `${ project.getProjectID() }`);
   renderTodos( project, todosWrap ); //fill the todos wrapper in other module, this one too busy
   //fill project and its parent with it
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
@@ -107,29 +107,20 @@ const addProjectListeners = (projectDiv, project)=> {
         }
       } );
     }
-    //handle clicks on clear done todos buttons. use projects' removeCompletedTodos(...IDs) to edit their todos arrays and trigger rerender.
+    //handle clicks on clear done todos buttons. use projects' removeCompletedTodos(...IDs)
+    //to edit their todos arrays.
     if ( e.target.className === 'removeCompletedTodosBtn' ) {
-      //testing
+      //testing, check todos' completed states before doing anything
       // project.getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      const removalIDs = [];
+      project.getTodosArr().forEach( todo=> {
+        if ( todo.getCompletedState() ) {
+          removalIDs.push( todo.getTodoID() );
+        }
+      });
+      project.removeCompletedTodos(...removalIDs);
+      //after the todosArr is cleaned up, rerender todos... choose correct todos wrapper
+      renderTodos( project, document.querySelector(`.todosWrap[data-project-id='${ e.target.dataset.projectId }']`) )
     }
 
   });
@@ -183,6 +174,8 @@ const makeTodo = id=> {
 }
 //Todo render module
 const renderTodos = ( project, todosWrap )=> {
+  //clear old todos if they exist
+  todosWrap.innerHTML = '';
   // lg( `project ${project.getProjectID()}'s Todos to render: ` )
   // lg( project.getTodosArr() )
   project.getTodosArr().forEach( todo=>{
@@ -250,8 +243,8 @@ const appFlow = ( ()=> {
   projectCreationID++;
 
   //todo rendering testing
-  for (let runs = 1; runs<=2; runs++) { projectsArr[0].addTodo() };
-  // for (let runs = 1; runs<=1; runs++) { projectsArr[1].addTodo() };
+  for (let runs = 1; runs<=3; runs++) { projectsArr[0].addTodo() };
+  for (let runs = 1; runs<=4; runs++) { projectsArr[1].addTodo() };
 
   //render each project
   projectsArr.forEach( project=> renderProject(project) );
@@ -272,9 +265,6 @@ const appFlow = ( ()=> {
   //make some todos, remove some, then log existing ones
   // lg ( 'making 5 todos in first project...' )
   // for (let runs = 1; runs<=5; runs++) { projectsArr[0].addTodo() };
-  // lg( 'removing index 1 & 3 todos...' )
-  // projectsArr[0].removeCompletedTodos(1,3);
-  // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `ID of todo at index ${i}: ${todo.getTodoID()}` ) );
   // lg('setting a todo\'s priority level and logging all for comparison..')
   // projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
