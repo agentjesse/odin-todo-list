@@ -109,7 +109,6 @@ body {
     width: 2rem;
     height: 2rem;
     accent-color: var(--fg400);
-    background-color: var(--fg300);/*for dev*/
     cursor: pointer;
   }
   .completionBox::before { /*checkbox inputs styling overlay. first 3 props needed, plus :checked::before rule after*/

@@ -8,24 +8,14 @@ import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand 
 const makeProject = projectID=> {
   let title = '', titlePlaceholder = '...Project Title',
       description = '', descriptionPlaceholder = '...Project Description',
-      todoCreationID = 0;
-  const todosArr = [];
+      todoCreationID = 0, todosArr = [];
 
   const addTodo = ()=> { //keep here and use closure.
     todosArr.push( makeTodo(todoCreationID) ); // ID for each todo from counter
     todoCreationID++;
   }
-  const removeCompletedTodos = (...removalIDs)=> { //pass in number type IDs of todos to delete
-    removalIDs.forEach( removalID=> {
-      for ( let currentTodoIndex = 0; currentTodoIndex<todosArr.length; currentTodoIndex++ ){
-        //iterate through each todo until its ID matches removalID. could have been done with a filter since it is shallow copy, but whatever. that is actually done later for a similar loop.
-        if ( todosArr[currentTodoIndex].getTodoID() === removalID ){
-          todosArr.splice(currentTodoIndex,1);
-          currentTodoIndex--; //reposition currentTodoIndex after an in place removal
-          break; //no need to keep going after a match and delete
-        }
-      }
-    });
+  const removeCompletedTodos = ()=> {
+    todosArr = todosArr.filter( todo=> !todo.getCompletedState() );
   }
 
   return { //public exposure. projectID is passed in and exposed, unmodified
@@ -113,16 +103,7 @@ const addProjectListeners = (projectDiv, project)=> {
 
     //handle clicks on clear done todos buttons
     if ( e.target.className === 'removeCompletedTodosBtn' ) {
-      //testing: check todos' completed states before doing anything
-      // project.getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
-      //removeCompletedTodos invoked with id arguments...bad implementation, need to refactor in future
-      const removalIDs = [];
-      project.getTodosArr().forEach( todo=> { 
-        if ( todo.getCompletedState() ) {
-          removalIDs.push( todo.getTodoID() );
-        }
-      });
-      project.removeCompletedTodos(...removalIDs); //clean up project's todos array
+      project.removeCompletedTodos(); //filter out project's completed todos
       renderTodos( project, todosWrap ); //then rerender todos
     }
 
@@ -155,7 +136,7 @@ const addProjectListeners = (projectDiv, project)=> {
 
     //handle individual todo title edits
     if ( e.target.className === 'todoTitle' ) {
-      lg( e.target.className )
+      lg( project.getTodosArr() )
       
 
 
