@@ -1,20 +1,16 @@
-// importing CSS directly into the related js file
+// imports
 import './styles.css'
-
-// module imports
 import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand loggers
-
-//functionality for objects
 
 //project objects
 //have: project ID, title, description, 
-//do: store and create todo objects, remove completed todos
+//do: store todos, create them, remove completed ones.
 const makeProject = projectID=> {
   let title = 'Untitled Project', description = '', todoCreationID = 0;
   const todosArr = [];
 
   const addTodo = ()=> { //keep here and use closure.
-    todosArr.push( makeTodo(todoCreationID) ); //control via an ID
+    todosArr.push( makeTodo(todoCreationID) ); // ID for each todo from counter
     todoCreationID++;
   }
   const removeCompletedTodos = (...removalIDs)=> { //pass in number type IDs of todos to delete
@@ -37,6 +33,18 @@ const makeProject = projectID=> {
     addTodo,
     removeCompletedTodos,
   }
+}
+
+//project rendering module
+const renderProject = project=> {
+  const projectDiv = document.createElement('div');
+  projectDiv.className = 'project';
+  const titleInput = document.createElement('input');
+  titleInput.placeholder = 'poo';
+  projectDiv.append(titleInput);
+
+
+  document.querySelector('body').append( projectDiv );
 }
 
 //todo objects
@@ -65,6 +73,7 @@ const makeTodo = id=> {
   }
 }
 
+
 //application start IIFE, no referencing for now so skipping assignment
 ( ()=>{
   //store projects in an array that should default to one project if the localStorage doesn't have any
@@ -75,28 +84,30 @@ const makeTodo = id=> {
   //...make a new one with ID from a counter, push it in, and increment ID counter:
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
+  projectsArr.push( makeProject(projectCreationID) );
+  projectCreationID++;
 
-  //need to render dom elements from projects...start here and break out logic into another module?
-  
+  //render each project
+  projectsArr.forEach( project=> renderProject(project) );
 
   //save projects to localStorage....instead of deep cloning, need to save only necessary objects and use them to build new ones after. below is a useless shallow clone attempt, do not use
   // localStorage.setItem( '[TBD]projects in this device\'s localStorage: ', JSON.stringify(projectsArr) );
 
 
-  //todo testing
+  //todo objects testing
   //make some todos, remove some, then log existing ones
-  lg ( 'making 5 todos in first project...' )
-  for (let runs = 1; runs<=5; runs++) { projectsArr[0].addTodo() };
-  //lg( 'removing index 1 & 3 todos...' )
-  //projectsArr[0].removeCompletedTodos(1,3);
+  // lg ( 'making 5 todos in first project...' )
+  // for (let runs = 1; runs<=5; runs++) { projectsArr[0].addTodo() };
+  // lg( 'removing index 1 & 3 todos...' )
+  // projectsArr[0].removeCompletedTodos(1,3);
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `ID of todo at index ${i}: ${todo.getID()}` ) );
   //test toggling completed state
   // lg('toggling a todo\'s completed state and logging all for comparison..')
   // projectsArr[0].getTodosArr()[2].toggleCompletedState()
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
-  lg('setting a todo\'s priority level and logging all for comparison..')
-  projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
-  projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
+  // lg('setting a todo\'s priority level and logging all for comparison..')
+  // projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
+  // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
 
   
 } )();

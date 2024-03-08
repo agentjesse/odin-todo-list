@@ -6,13 +6,39 @@ input, button, textarea, select { font: inherit; }
 /* .roboto { font-family: "Roboto"; font-weight: 400,500; font-style: normal; } */
 /* variables---------------------------------------------------------------- */
 :root{
-  /* --grey1: hsl(214 48% 82%); */
+  --black: hsl(0, 0%, 0%);
+  --white: hsl(0, 0%, 100%);
+  /* tailwind based, then hue shifted 23 degrees higher */
+  --bg950: hsl(189, 91%, 9%);
+  --bg900: hsl(187, 86%, 16%);
+  --bg800: hsl(186, 88%, 20%);
+  --bg700: hsl(186, 94%, 24%);
+  --bg600: hsl(184, 94%, 30%);
+  --mg500: hsl(183, 84%, 39%);
+  --fg400: hsl(181, 64%, 52%);
+  --fg300: hsl(179, 72%, 67%);
+  --fg200: hsl(175, 76%, 80%);
+  --fg100: hsl(172, 80%, 90%);
+  --fg50:  hsl(175, 81%, 96%);
+
+  /* base font, user agent stylesheet overwrite this */
+  font-size: 16px; /*chrome default*/
 }
 
 /* main CSS */
 body{
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
   font-weight: 400;
-  /* background-color: var(--grey1); */
+  background-color: var(--bg900);
 }
-
+.project{
+  margin: 1rem 0;
+  padding: 0.25rem 1rem;
+  input{
+    width: 100%;
+  }
+  input::placeholder {
+    color: var(--bg950);
+    font-size: 1rem;
+  }
+}
