@@ -1,9 +1,10 @@
 /* Next task:
-- adjust todo rendering to read todo's priority and show red/yellow/green = high/norm/low colors on left and right borders. Also implement ordering; maybe use array sort?
+- implement todo priority ordering; maybe use array sort?
 
 - do not auto close todo's when adding new or clearing done ones
 - new projects should render with at least one todo
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
+- rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
 
 // imports
@@ -165,6 +166,8 @@ const addProjectListeners = (projectWrap, project)=> {
   projectWrap.addEventListener( 'change' , e=> {
     e.stopPropagation();
     lg('this changed value: ' + e.target.outerHTML ); // nice output of element in console
+    //multi use variable for cleaner invocations later
+    const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.parentElement.parentElement.dataset.projectId }']`)
 
     //handle individual todo due date/time setting by calling todo.setDueDateTime()
     //info: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
@@ -191,6 +194,8 @@ const addProjectListeners = (projectWrap, project)=> {
 
       lg('new todo priority:' + project.getTodosArr()
       .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
+
+      appendTodos( project, todosWrap ) //rerender
     }
 
   } );
@@ -249,35 +254,38 @@ const appendTodos = ( project, todosWrap )=> {
 
     //todo priority selector element
     const prioritySelect = document.createElement('select');
+    const priorityOptGroup = document.createElement('optgroup'); //labeled wrapper
+    priorityOptGroup.label = 'Priority:';
     const highOption = document.createElement('option');
     highOption.value = 'high';
     highOption.text = 'high';
     const normalOption = document.createElement('option');
     normalOption.value = 'normal';
     normalOption.text = 'normal';
-    normalOption.selected = true; //default. or assign different selected option checking todo.getPriorityLevel()
     const lowOption = document.createElement('option');
     lowOption.value = 'low';
     lowOption.text = 'low';
-    const priorityOptGroup = document.createElement('optgroup'); //labeled wrapper
-    priorityOptGroup.label = 'Priority:';
-
-
-
-
-
-
-
-
-
-
+    //need to show selected from priority level and set styling class.
+    switch ( todo.getPriorityLevel() ) {
+      case 'normal':
+        normalOption.selected = true;
+        todoWrap.classList.add( 'normalPriority' )
+        break;
+      case 'high':
+        highOption.selected = true;
+        todoWrap.classList.add( 'highPriority' )
+        break;
+      case 'low':
+        lowOption.selected = true;
+        todoWrap.classList.add( 'lowPriority' )
+    }
 
     //set class/data attributes for elems
     Object.entries( //object of elems to set attributes on goes here
       { todoWrap, todoExpandBtn, todoTitleInput,completionBoxInput,
       todoNotesInput,dueDateTimeInput,prioritySelect }
     ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
-      elem.className = key; //set class from element reference name
+      elem.classList.add( key ); //set class from element reference name
       if ( ['todoNotesInput', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { //add extra classes to specific elems
         elem.classList.add('noDisplay');
       }

@@ -11,6 +11,9 @@ button { display: block; cursor: pointer; }
 :root{
   --black: hsl(0, 0%, 0%);
   --white: hsl(0, 0%, 100%);
+  --red: hsl(0, 100%, 50%);
+  --yellow: hsl(60, 100%, 50%);
+  --green: hsl(120, 100%, 50%);
   /* tailwind blue palette based, then hue shifted ... CHANGE TO SKY PALETTE to OCD level MATCH TICTACTOE PROJECT */
   /*
   --bg950: hsl(199, 91%, 9%);
@@ -148,4 +151,16 @@ body {
   .noDisplay {
     display: none;
   }
+}
+.normalPriority {
+  box-shadow: inset 16px 0 8px -8px var(--yellow), /*left inset shadow*/
+              inset -16px 0 8px -8px var(--yellow); /*right inset shadow*/
+}
+.highPriority {
+  box-shadow: inset 16px 0 8px -8px var(--red), /*left inset shadow*/
+              inset -16px 0 8px -8px var(--red); /*right inset shadow*/
+}
+.lowPriority {
+  box-shadow: inset 16px 0 8px -8px var(--green), /*left inset shadow*/
+              inset -16px 0 8px -8px var(--green); /*right inset shadow*/           
 }
