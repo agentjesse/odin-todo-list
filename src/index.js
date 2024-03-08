@@ -1,8 +1,13 @@
 /*-- Next tasks:
-- implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
+- implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session. push seed data objects into an array for every object in projectsArr and todosArr.
+
+-fix todo desc. alignment; use wrappers or flex-basis
+
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
+
 --- Optional tasks:
+-
 -refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
@@ -96,7 +101,7 @@ const addProjectListeners = (projectWrap, project)=> {
       const todo = project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId);
       e.target.textContent = e.target.textContent === '▼' ? '▲' : '▼';
       //iterate through all elements in a todo and give some a hiding class
-      Array.from(e.target.parentElement.children).forEach( (elem,i)=>{
+      Array.from(e.target.parentElement.children).forEach( (elem,i)=> {
         if (i>2) { elem.classList.toggle('noDisplay') }
       } );
       // lg( 'clicked expansion button for todo: ' + e.target.dataset.todoId )
@@ -238,7 +243,8 @@ const appendTodos = ( project, todosWrap )=> {
     //make the todo's html elements.
     const todoWrap = document.createElement('div');
     const todoExpandBtn = document.createElement('button');
-    todoExpandBtn.textContent = '▼'; //opposite: ▲
+    if ( !todo.getOpenState() ) { todoExpandBtn.textContent = '▼' }
+      else { todoExpandBtn.textContent = '▲' }
     const todoTitleInput = document.createElement('input')
     if ( todo.getTitle() ) {  todoTitleInput.value = todo.getTitle() }
       else { todoTitleInput.placeholder = todo.getTitlePlaceholder() }
@@ -304,26 +310,31 @@ const appendTodos = ( project, todosWrap )=> {
 }
 
 //make seeds of data projects need to be rebuilt, store them in localStorage
-const seedProjectObjects = projectsArr=> {
+const storeProjectSeeds = projectsArr=> {
+
   localStorage.setItem( 'user', JSON.stringify( {fullName:"Jerry Smith"} ) );
   lg('localStorage entries: '+localStorage.length+'. object\'s JSON string in \'user\' key: '+localStorage.getItem('user'));
   lg( JSON.parse( localStorage.getItem('user') ) );
   lg('==========ignore testing logs above, they will be commented out===========');
 
-  const project = projectsArr[0]
-  const seed = {} //make a seed object of data from each project
-  Object.keys(project).forEach( key=> { //add properties to the seed
-    if ( key.startsWith('get') ) {
-      //compute property names for the seed object and method names to call from the source object in square brackets:
-      seed[ key[3].toLowerCase() + key.slice(4) ] = project[key]();
-    }
+  const projectSeedsArr = [];
+  projectsArr.forEach( project=> { //iterate over each
+    //make an object of seed data (as JSON strings) from project to se/deserialize. Skip object values (functions/arrays)
+    // The  && operator returns first falsy operand, or the last truthy if all operands are truthy. The || operator returns first truthy operand, or the last falsy if all operands are falsy.
+    const projectSeed = {}
+    Object.keys(project)
+    // .filter( key=> typeof project[key]() !== 'object' ) //bad way to check as this executes the method and adds a todo!
+    .filter( key=> key !== 'addTodo' && key !== 'getTodosArr' )
+    .forEach( key=> {
+      if ( key.startsWith('get') ) {
+        //compute property names for the projectSeed object and method names to call from the source object in square brackets:
+        projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project[key]();
+      }
+    } );
+    projectSeedsArr.push( projectSeed );
   } );
-  lg( seed );
+  lg( projectSeedsArr ); //testing
   
-
-
-
-
 
 }
 
@@ -356,6 +367,7 @@ const appFlow = ( ()=> {
   projectCreationID++;
   //first run: project[0] in projectArr should have one todo
   projectsArr[0].addTodo();
+
   //render all projects
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
 
@@ -368,8 +380,8 @@ const appFlow = ( ()=> {
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   }
   
-  //call a seedObjectsInLocalStorage function with access to them
-  seedProjectObjects( projectsArr );
+  //seed projects objects into localStorage. fn needs access to projects
+  storeProjectSeeds( projectsArr );
 
   return {
     getProjectsArr: ()=> projectsArr,
