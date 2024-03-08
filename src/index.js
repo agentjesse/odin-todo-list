@@ -3,7 +3,7 @@ import './styles.css'
 
 // module imports, from named and default
 // import { functionOne } from './myModule';
-import { logToConsole as lg } from "./logger"; //shorthand logger
+import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand loggers
 
 //functionality for objects
 
@@ -57,8 +57,8 @@ const makeTodo = index=> {
 // testing
 const openARestaurantProj = makeProject();
 for (let runs = 1; runs<=5; runs++) { openARestaurantProj.addTodo() };
-lg('project with 5 todos:' );
-lg( openARestaurantProj.getTodosArr() );
+lg('openARestaurantProj object\'s 5 todos:' );
+tb( openARestaurantProj.getTodosArr() );
 openARestaurantProj.removeCompletedTodos(1,3);
-lg('todos array after removal of index 1 & 3 todos:' );
-lg( openARestaurantProj.getTodosArr() );
+lg('openARestaurantProj object\'s todos array after removal of index 1 & 3 todos:' );
+tb( openARestaurantProj.getTodosArr() );
