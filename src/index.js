@@ -6,7 +6,9 @@ import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand 
 //have: project ID, title, description, 
 //do: store todos, create them, remove completed ones.
 const makeProject = projectID=> {
-  let title = '...Untitled Project', description = '...Project Description', todoCreationID = 0;
+  let title = '', titlePlaceholder = '...Project Title',
+      description = '', descriptionPlaceholder = '...Project Description',
+      todoCreationID = 0;
   const todosArr = [];
 
   const addTodo = ()=> { //keep here and use closure.
@@ -28,7 +30,9 @@ const makeProject = projectID=> {
   return { //public exposure. projectID is passed in and exposed, unmodified
     getProjectID: ()=> projectID,
     getTitle: ()=> title,
+    getTitlePlaceholder: ()=> titlePlaceholder,
     getDescription: ()=> description,
+    getDescriptionPlaceholder: ()=> descriptionPlaceholder,
     getTodosArr: ()=> todosArr,
     addTodo,
     removeCompletedTodos,
@@ -38,12 +42,12 @@ const makeProject = projectID=> {
 const renderProject = project=> {
   //make each project div's title/desc/buttons/etc. children
   const projectDiv = document.createElement('div');
-  projectDiv.className = 'project'; //project element identifiers
+  projectDiv.className = 'projectDiv'; //project element identifiers
   projectDiv.setAttribute( 'data-project-id', `${ project.getProjectID() }`);
   const titleInput = document.createElement('input'); //title
-  titleInput.placeholder = `${ project.getTitle() }`;
+  titleInput.placeholder = `${ project.getTitlePlaceholder() }`;
   const descriptionInput = document.createElement('input'); //description
-  descriptionInput.placeholder = `${ project.getDescription() }`;
+  descriptionInput.placeholder = `${ project.getDescriptionPlaceholder() }`;
   const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
   removeProjectBtn.className = 'removeProjectBtn';
   removeProjectBtn.textContent = 'remove project';
@@ -67,21 +71,38 @@ const renderProject = project=> {
   addProjectListeners( projectDiv );
 }
 
-//add event listeners to each project that use bubbling of events from children
+//add event listeners to each projectDiv that use bubbling of events from children
 const addProjectListeners = projectDiv=> {
   //if listener removal is needed in future, make an AbortController here and pass its signal in the addEventListener options
+  
   projectDiv.addEventListener( 'click' , e=> {
     e.stopPropagation();
+    // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
+
     //handle todo expansion button clicks
     if ( e.target.tagName === 'BUTTON' && e.target.dataset.todoId ) {
       const btn = e.target;
-      lg('clicked: ' + btn.outerHTML ); //very nice output of element in question for console
-      btn.textContent = btn.textContent === '▼' ? '▲' : '▼'; //visuals, ooh.
+      btn.textContent = btn.textContent === '▼' ? '▲' : '▼';
       //iterate through all elements in a todo and give some a hiding class
       Array.from(btn.parentElement.children).forEach( (element,i)=>{
         if (i>2) { element.classList.toggle('noDisplay') }
       } );
     }
+
+  });
+
+  //handle the bubbling focusout events when inputs lose focus
+  projectDiv.addEventListener( 'focusout' , e=> {
+    e.stopPropagation();
+    lg('this lost focus: ' + e.target.outerHTML ); // nice output of element in console
+
+    //handle project's title edits
+    if ( e.target.tagName === 'INPUT' && e.target.placeholder === '...Project Title' ) {
+      const titleInput = e.target;
+      lg( titleInput.value )
+      
+    }
+
   });
 }
 

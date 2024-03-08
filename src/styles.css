@@ -46,7 +46,7 @@ body {
   font-weight: 400;
   background-color: var(--bg900);
 }
-.project {
+.projectDiv {
   margin: 1rem 0;
   padding: 0.25rem 1rem;
   background-color: var(--fg200);
@@ -89,7 +89,8 @@ body {
   margin: 0 0 0.5rem 0;
   gap: 0 0.25rem;
   button {
-    height: 1.5rem;
+    border-style: none;
+    background-color: var(--fg300);
   }
   .todoTitle {
     flex-basis: 75%;
