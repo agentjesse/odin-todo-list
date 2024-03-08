@@ -56,10 +56,10 @@ const renderProject = project=> {
   const projectBtnsWrap = document.createElement('div'); //btns wrapper
   projectBtnsWrap.className = 'projectBtnsWrap';
   projectBtnsWrap.append( removeProjectBtn, removeCompletedTodosBtn, addTodoBtn );
-  const todosWrap = document.createElement('div'); //todos wrapper, append them here
+  //todos wrapper, append todos to it
+  const todosWrap = document.createElement('div');
   todosWrap.className = 'todosWrap';
-  //fill the todos wrapper in other module, this one too busy
-  renderTodos( project, todosWrap );
+  renderTodos( project, todosWrap ); //fill the todos wrapper in other module, this one too busy
   //fill project and its parent
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
   document.querySelector('body').append( projectDiv );
@@ -106,8 +106,17 @@ const renderTodos = ( project, todosWrap )=> {
     const todoNotes = document.createElement('input');
     todoNotes.className = 'todoNotes';
     todoNotes.placeholder = todo.getNotes();
-    //todo due date picker, call setDueDate()
-    
+
+    //todo due date picker calls setDueDate()
+    //uses: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
+    const dueDateTime = document.createElement('input');
+    dueDateTime.className = 'dueDateTime';
+    dueDateTime.setAttribute('type', 'datetime-local');
+    lg( //testing
+      //YYYY-MM-DDThh:mm format string for <input type="datetime-local">'s value
+      new Date().toISOString().slice(0,16)
+    );
+
 
     //todo priority selector element
     const prioritySelect = document.createElement('select');
@@ -128,7 +137,7 @@ const renderTodos = ( project, todosWrap )=> {
     prioritySelect.append( priorityOptGroup );
 
     //append todo's children
-    todoDiv.append(todoTitle, completionBox, todoNotes, prioritySelect);
+    todoDiv.append(todoTitle, completionBox, todoNotes, dueDateTime, prioritySelect);
     //append todo to wrapper in project
     todosWrap.append( todoDiv )
   } );
