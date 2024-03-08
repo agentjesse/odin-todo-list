@@ -1,7 +1,9 @@
 /*-- Next tasks:
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
+-enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
 --- Optional tasks:
+-refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
 
@@ -306,7 +308,6 @@ const appendTodos = ( project, todosWrap )=> {
 const appFlow = ( ()=> {
   //store projects in an array. new ones made with an ID that is incremented
   let projectsArr = [], projectCreationID = 0;
-
   //make base elements
   //button to add a project to projects wrapper
   const addProjectBtn = document.createElement('button');
@@ -319,9 +320,8 @@ const appFlow = ( ()=> {
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   } );
   document.querySelector('body').append( addProjectBtn );
-  //projects wrapper
   const projectsWrap = document.createElement('div');
-  projectsWrap.className = 'projectsWrap'; //maybe use for styling?
+  projectsWrap.className = 'projectsWrap';
   document.querySelector('body').append( projectsWrap );
 
   //if local storage is devoid of projects...
@@ -329,24 +329,33 @@ const appFlow = ( ()=> {
   //...make a new one with ID from a counter, push it in, and increment ID counter:
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
-
+  projectsArr.push( makeProject(projectCreationID) ); //empty project, looks nice
+  projectCreationID++;
   //first run: project[0] in projectArr should have one todo
-  projectsArr[0].addTodo()
-
+  projectsArr[0].addTodo();
   //render each project
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
 
-  //save projects to localStorage....instead of deep cloning, need to save only necessary objects and use them to build new ones after. below is a useless shallow clone attempt, do not use
-  // localStorage.setItem( '[TBD]projects in this device\'s localStorage: ', JSON.stringify(projectsArr) );
-
-  //remove project from projectsArr via ID
+  //remove project from projectsArr via ID ...refactor out for SOLID
   const removeProject = id=> {
     //filter returns a shallow copy, use instead of a loop with in place splice
-    projectsArr = projectsArr.filter( project=> project.getProjectID() !== +id ); //unary plus for number from string
-    //remove all nodes. it's ok to use innerHTML here since it's not user generated code. Setting innerHTML to an empty string removes all child elements and event listeners attached to them.
+    projectsArr = projectsArr.filter( project=> project.getProjectID() !== +id );
+    //Setting innerHTML to empty string: removes child elems & their event listeners
     projectsWrap.innerHTML = '';
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   }
+
+  //save projects to localStorage. Instead of deep cloning, need to save only necessary objects and use them to build new ones after.
+  const testPerson = {fullName:"Jerry Smith"};
+  localStorage.setItem( 'user', JSON.stringify( testPerson ) );
+  lg('localStorage entries: '+localStorage.length+'. object\'s JSON string in \'user\' key: '+localStorage.getItem('user'));
+  lg( JSON.parse( localStorage.getItem('user') ) );
+  lg('==========ignore testing logs above, they will be commented out===========');
+  //so...all your project objects are pretty much filled with closure functions...now what..
+  lg( JSON.stringify( projectsArr ) );
+  
+
+
 
   return {
     getProjectsArr: ()=> projectsArr,
