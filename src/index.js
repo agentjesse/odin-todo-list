@@ -6,7 +6,7 @@ import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand 
 //have: project ID, title, description, 
 //do: store todos, create them, remove completed ones.
 const makeProject = projectID=> {
-  let title = 'Untitled Project', description = '', todoCreationID = 0;
+  let title = '...Untitled Project', description = '...Project Description', todoCreationID = 0;
   const todosArr = [];
 
   const addTodo = ()=> { //keep here and use closure.
@@ -37,13 +37,34 @@ const makeProject = projectID=> {
 
 //project rendering module
 const renderProject = project=> {
+  //make each project div with title/desc/.etc children
   const projectDiv = document.createElement('div');
-  projectDiv.className = 'project';
-  const titleInput = document.createElement('input');
-  titleInput.placeholder = 'poo';
-  projectDiv.append(titleInput);
+  projectDiv.className = 'project'; //project element identifiers
+  projectDiv.setAttribute( 'data-id', `${ project.getProjectID() }`);
+  const titleInput = document.createElement('input'); //title
+  titleInput.placeholder = `${ project.getTitle() }`;
+  const descriptionInput = document.createElement('input'); //description
+  descriptionInput.placeholder = `${ project.getDescription() }`;
+  const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
+  removeProjectBtn.className = 'removeProjectBtn';
+  removeProjectBtn.textContent = 'remove project';
+  const removeCompletedTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
+  removeCompletedTodosBtn.className = 'removeCompletedTodosBtn';
+  removeCompletedTodosBtn.textContent = 'remove completed';
+  const addTodoBtn = document.createElement('button'); //add todo button
+  addTodoBtn.className = 'addTodoBtn';
+  addTodoBtn.textContent = 'add todo';
+  const projectBtnsWrap = document.createElement('div'); //btns wrapper
+  projectBtnsWrap.className = 'projectBtnsWrap';
+  projectBtnsWrap.append( removeProjectBtn, removeCompletedTodosBtn, addTodoBtn );
+  const todosWrap = document.createElement('div'); //todos wrapper, append them here
+  todosWrap.className = 'todosWrap';
 
+  //fill the todos wrapper
+  
 
+  //fill project and its parent
+  projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
   document.querySelector('body').append( projectDiv );
 }
 

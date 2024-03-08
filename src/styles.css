@@ -1,44 +1,65 @@
-/* CSS RESET: use box-sizing model; remove default margin & form typography styles; */
+/* CSS RESET: use box-sizing model; remove default margin & form typography
+styles; set buttons to display block; set base (pre UA stylesheet) font size; */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
 input, button, textarea, select { font: inherit; }
+button { display: block; }
+:root{ font-size: 16px; }  /*chrome default*/
 /* imported google fonts examples */
 /* .roboto { font-family: "Roboto"; font-weight: 400,500; font-style: normal; } */
 /* variables---------------------------------------------------------------- */
 :root{
   --black: hsl(0, 0%, 0%);
   --white: hsl(0, 0%, 100%);
-  /* tailwind based, then hue shifted 23 degrees higher */
-  --bg950: hsl(189, 91%, 9%);
-  --bg900: hsl(187, 86%, 16%);
-  --bg800: hsl(186, 88%, 20%);
-  --bg700: hsl(186, 94%, 24%);
-  --bg600: hsl(184, 94%, 30%);
-  --mg500: hsl(183, 84%, 39%);
-  --fg400: hsl(181, 64%, 52%);
-  --fg300: hsl(179, 72%, 67%);
-  --fg200: hsl(175, 76%, 80%);
-  --fg100: hsl(172, 80%, 90%);
-  --fg50:  hsl(175, 81%, 96%);
+  /* tailwind palette based, then hue shifted */
+  --bg950: hsl(199, 91%, 9%);
+  --bg900: hsl(197, 86%, 16%);
+  --bg800: hsl(196, 88%, 20%);
+  --bg700: hsl(196, 94%, 24%);
+  --bg600: hsl(194, 94%, 30%);
+  --mg500: hsl(193, 84%, 39%);
+  --fg400: hsl(191, 64%, 52%);
+  --fg300: hsl(189, 72%, 67%);
+  --fg200: hsl(185, 76%, 80%);
+  --fg100: hsl(182, 80%, 90%);
+  --fg50:  hsl(185, 81%, 96%);
 
-  /* base font, user agent stylesheet overwrite this */
-  font-size: 16px; /*chrome default*/
 }
 
 /* main CSS */
-body{
+body {
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
   font-weight: 400;
   background-color: var(--bg900);
 }
-.project{
+.project {
   margin: 1rem 0;
   padding: 0.25rem 1rem;
-  input{
+  background-color: var(--mg500);
+  input {
     width: 100%;
+    font-size: 1.25rem;
+    background-color: var(--fg100);
   }
   input::placeholder {
-    color: var(--bg950);
-    font-size: 1rem;
+    color: var(--fg400);
+  }
+  .projectBtnsWrap{
+    display: flex;
+    justify-content: space-between;
+    gap: 0.25rem;
+    button {
+      background-color: var(--fg200);
+      color: var(--bg900);
+      border-radius: 5px;
+      border-style: none;
+      padding: 0.25rem;
+      margin: 0.25rem 0;
+      box-shadow: 0 0 2px 2px var(--bg600);
+    }
+    button:hover{
+      cursor: pointer;
+      background-color: var(--fg50);
+    }
   }
 }
