@@ -1,11 +1,8 @@
 /*-- Next tasks:
--currently on textarea-refactor branch!!! careful with git commands.
-
--enabling wrapping for DueDateTime inputs
 
 --- Optional tasks:
--refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
+-enable wrapping for DueDateTime inputs via a 3rd party library for date/time pickers
 */
 
 // imports
@@ -18,7 +15,7 @@ import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand 
 //overwrite values from localStorage project seed objects if provided
 const makeProject = (projectID, projectSeed)=> {
   let title, titlePlaceholder = '...Project Title',
-      description, descriptionPlaceholder = '...Project Description',
+      description, descriptionPlaceholder = '...Description',
       todoCreationID = 0, todosArr = [];
 
   //overwrite from seed if it is passed in as an argument
@@ -117,9 +114,9 @@ const addProjectListeners = (projectWrap, project)=> {
     const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.dataset.projectId }']`)
     // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
 
-    //handle project removal with: appFlow.removeProject(project_id)
+    //handle project removal with: removeProject(project_id)
     if ( e.target.className === 'removeProjectBtn' ) {
-      appFlow.removeProject( e.target.dataset.projectId );
+      removeProject( e.target.dataset.projectId );
 
       storeProjectSeeds(); //update localStorage
     }
@@ -249,7 +246,7 @@ const addProjectListeners = (projectWrap, project)=> {
 //have: title, notes, due date/time, priorityLevel, completion state
 const makeTodo = (id, todoSeed)=> {
   let title, titlePlaceholder = '...Untitled Todo',
-      notes, notesPlaceholder = '...add notes',
+      notes, notesPlaceholder = '...Notes',
       dueDateTime, priorityLevel = 'normal', completedState = false,
       openState = false;
 
@@ -427,6 +424,19 @@ const makeTodoSeedsArr = project=> {
 
 // lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
 
+//remove project from projectsArr, pass in ID
+const removeProject = id=> {
+  const projectsWrap = appFlow.getProjectsWrap();
+  let projectsArr = appFlow.getProjectsArr();
+  //filter returns a shallow copy array, ie. same objects
+  appFlow.setProjectsArr( projectsArr.filter( project=> project.getProjectID() !== +id ) );
+  //Setting innerHTML to empty string: removes child elems & their event listeners
+  projectsWrap.innerHTML = '';
+  //get the recently set projectsArr and append the projects
+  projectsArr = appFlow.getProjectsArr();
+  projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
+}
+
 //application flow has an arrow function IIFE that returns an object (with state) to access via appFlow variable
 const appFlow = ( ()=> {
   let projectsArr = [], projectCreationID = 0;
@@ -439,11 +449,8 @@ const appFlow = ( ()=> {
     projectCreationID++;
     projectsWrap.innerHTML = ''; //wipe container first
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
-    // lg( 'project added, new projectsArr: ' );
-    // lg( projectsArr );
 
-    //update localStorage...
-    storeProjectSeeds();
+    storeProjectSeeds(); //update localStorage...
   } );
   const projectsWrap = document.createElement('div');
   projectsWrap.className = 'projectsWrap';
@@ -474,21 +481,13 @@ const appFlow = ( ()=> {
 
   //render all projects
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
-
-  //remove project from projectsArr via ID ...refactor out for SOLID
-  const removeProject = id=> {
-    //filter returns a shallow copy, use instead of a loop with in place splice
-    projectsArr = projectsArr.filter( project=> project.getProjectID() !== +id );
-    //Setting innerHTML to empty string: removes child elems & their event listeners
-    projectsWrap.innerHTML = '';
-    projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
-  }
   
   //store project seed objects in localStorage
   storeProjectSeeds(projectsArr); //projectsArr needs to be passed in first time.
 
   return {
     getProjectsArr: ()=> projectsArr,
-    removeProject
+    setProjectsArr: newProjectsArr=> projectsArr = newProjectsArr,
+    getProjectsWrap: ()=> projectsWrap,
   }
 } )();

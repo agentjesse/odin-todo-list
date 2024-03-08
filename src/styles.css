@@ -28,20 +28,6 @@ button { display: block; cursor: pointer; }
   --fg100: hsl(182, 80%, 90%);
   --fg50:  hsl(185, 81%, 96%);
   
-
-  /*brown theme (for dev) 
-  --bg950: hsl(33, 91%, 9%);
-  --bg900: hsl(31, 86%, 16%);
-  --bg800: hsl(30, 88%, 20%);
-  --bg700: hsl(30, 94%, 24%);
-  --bg600: hsl(28, 94%, 30%);
-  --mg500: hsl(27, 84%, 39%);
-  --fg400: hsl(25, 64%, 52%);
-  --fg300: hsl(23, 72%, 67%);
-  --fg200: hsl(19, 76%, 80%);
-  --fg100: hsl(16, 80%, 90%);
-  --fg50:  hsl(19, 81%, 96%);
-  */
 }
 
 /* main CSS */
@@ -55,20 +41,25 @@ body {
     text-align: center;
     text-shadow: 0px 1px 4px var(--black), 0px 1px 4px var(--black);
     font-weight: 400;
-    margin: 0 0 0.6rem 0;
+    margin: 0 0 0.5rem 0;
   }
   .addProjectBtn {
     background-color: var(--fg100);
     color: var(--bg900);
     border-radius: 5px;
     border-style: none;
-    padding: 0.25rem 0.5rem;
-    margin: 0 0.5rem 0 auto;
+    padding: 0.5rem 0.5rem;
+    margin: 0 auto;
     box-shadow: 0 0 3px 2px var(--fg400);
+  }
+  .projectsWrap {
+    max-width: 600px;
+    min-width: 320px;
+    margin: 0 auto;
   }
 }
 .projectWrap {
-  margin: 0.75rem 0 1rem 0;
+  margin: 0.5rem 0 1rem 0;
   padding: 0.25rem 1rem;
   background-color: var(--fg200);
   box-shadow: 0px 0px 2px 2px var(--mg500);
@@ -90,7 +81,7 @@ body {
     display: flex;
     justify-content: space-between;
     gap: 0.25rem;
-    margin: 0.5rem 0.25rem 0.75rem 0.25rem;
+    margin: 0.5rem 0.25rem 0.5rem 0.25rem;
     button {
       background-color: var(--fg100);
       color: var(--bg900);
@@ -125,11 +116,17 @@ body {
     flex-basis: 75%;
     margin: 0 auto 0.25rem;
   }
+  input {
+    cursor: pointer;
+    display: block;
+    background-color: var(--fg100);
+    font-size: 1rem;
+    border-style: none;
+  }
   .completionBoxInput {
     width: 2rem; /* match expand btn*/
     height: 2rem;
     accent-color: var(--fg400);
-    cursor: pointer;
   }
   .completionBoxInput::before { /*checkbox inputs styling overlay. first 3 props needed, plus :checked::before rule after*/
     content: "";
@@ -143,14 +140,23 @@ body {
     display: none; /* remove pseudo-element when checked */
   }
   .dueDateTimeInput {
-    flex-basis: 42%;
-    cursor: pointer;
+    flex-basis: 75%;
+    margin: 0 0 0.25rem 0;
+    color: var(--bg900);
+    padding: 0.25rem 0;
+    border-radius: 5px;
   }
   .prioritySelect {
-    width: 4.75rem;
+    font-size: 1rem;
+    border-style: none;
+    border-radius: 9px;
+    display: block;
+    flex-basis: 28%;
     cursor: pointer;
     color: var(--bg950);
     background-color: var(--fg100);
+    margin: 0 0 0.25rem 0;
+    text-align: center;
   }
   .noDisplay {
     display: none;
