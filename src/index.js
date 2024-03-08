@@ -4,9 +4,6 @@ need to implement todos into localStorage saving using storeTodoSeeds fn
 
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
--fix todo desc. alignment; use wrappers or flex-basis
-
-
 --- Optional tasks:
 
 -refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
@@ -352,7 +349,7 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
 }
 //make seeds of individual todos in projects to store in localStorage. ...start with making an object for each project that hold an array of todos data objects for each todo
 const storeTodoSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
-  
+
 
 
 

@@ -111,6 +111,7 @@ body {
   margin: 0 0 0.5rem 0;
   gap: 0 0.25rem;
   .todoExpandBtn {
+    width: 2rem; /*match completion box*/
     border-style: none;
     background-color: var(--fg300);
     color: var(--bg950); /*ios safari does not default to black for button text*/
@@ -126,7 +127,7 @@ body {
     background-color: var(--fg300);/*for dev*/
   }
   .completionBoxInput {
-    width: 2rem;
+    width: 2rem; /* match expand btn*/
     height: 2rem;
     accent-color: var(--fg400);
     cursor: pointer;
