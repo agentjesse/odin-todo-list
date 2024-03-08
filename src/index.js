@@ -1,7 +1,4 @@
 /*-- Next tasks:
--implement use of projectSeedsArr in localStorage progress:
-need to implement rebuildinh todos from localStorage
-
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
 --- Optional tasks:
@@ -25,9 +22,17 @@ const makeProject = (projectID, projectSeed)=> {
 
   //overwrite from seed if it is passed in as an argument
   if ( projectSeed ) {
-    //overwrite variables using object destructuring from the projectSeed obj.
+    //overwrite project variables using object destructuring from the projectSeed obj.
     //Parenthesis force the JS engine to evaluate as an expression including the object pattern to destructure, instead of a block statement.
     ( { title, description, todoCreationID } = projectSeed );
+    //remake todos for their project's todosArray from todosSeedsArr
+    projectSeed.todoSeedsArr.forEach( todoSeed=> {
+      lg( 'found todo seed:' );
+      lg( todoSeed );
+      // use ID from seed, set counter in project for next if needed
+      todosArr.push( makeTodo( todoSeed.todoID, todoSeed ) );
+      todoCreationID = todoSeed.todoID + 1;
+    } );
   }
 
   const addTodo = ()=> { //keep here and use closure.
@@ -226,14 +231,20 @@ const addProjectListeners = (projectWrap, project)=> {
 }
 
 //todo objects
-//made by passing in a number type argument for ID
+//pass in a number type for ID, optional localStorage seed
 //have: title, notes, due date/time, priorityLevel, completion state
-const makeTodo = id=> {
+const makeTodo = (id, todoSeed)=> {
   let title, titlePlaceholder = '...Untitled Todo',
       notes, notesPlaceholder = '...add notes',
       dueDateTime, priorityLevel = 'normal', completedState = false,
       openState = false;
 
+  //overwrite from seed if it is passed in as an argument
+  if ( todoSeed ) {
+    //overwrite todo vars via object destructuring & parentheses
+    ( { completedState,dueDateTime,notes,openState,priorityLevel,title } = todoSeed );
+  }
+      
   //to toggle completedState of a todo instance
   const toggleCompletedState = ()=> completedState = completedState ? false : true;
 
@@ -343,7 +354,7 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
       if ( key === 'getTitle' ) {
         projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project.getTitle() ? project.getTitle() : ''; //set empty string for JSON if undefined is returned
       }
-      if ( key === 'getDescription' ) {
+      else if ( key === 'getDescription' ) {
         projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project.getDescription() ? project.getDescription() : '';
       }
       else {
@@ -393,11 +404,6 @@ const makeTodoSeedsArr = project=> {
   return todoSeedsArr;
 }
 
-
-
-
-
-
 // lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
 
 //application flow has an arrow function IIFE that returns an object (with state) to access via appFlow variable
@@ -426,13 +432,13 @@ const appFlow = ( ()=> {
   //check for anything useful in localStorage from previous page visit
   const projectSeedsArr = JSON.parse( localStorage.getItem('projectSeedsArr') );
   if ( Array.isArray( projectSeedsArr ) ) {
-    lg( 'useful localStorage data found, listing project seeds:' );
     projectSeedsArr.forEach( projectSeed=> {
+      lg( 'found project seed:' );
       lg( projectSeed ); //testing
       projectsArr.push( makeProject( projectSeed.projectID, projectSeed ) );
       projectCreationID = projectSeed.projectID + 1;//one higher than last added project id
     } );
-    lg( 'new projectCreationID: ' + projectCreationID );
+    // lg( 'new projectCreationID: ' + projectCreationID );
   }
   else {
     lg( 'no useful localStorage data found, starting fresh...' );
