@@ -34,7 +34,6 @@ const makeProject = projectID=> {
     removeCompletedTodos,
   }
 }
-
 //project rendering module
 const renderProject = project=> {
   //make each project div's title/desc/buttons/etc. children
@@ -59,28 +58,8 @@ const renderProject = project=> {
   projectBtnsWrap.append( removeProjectBtn, removeCompletedTodosBtn, addTodoBtn );
   const todosWrap = document.createElement('div'); //todos wrapper, append them here
   todosWrap.className = 'todosWrap';
-
-  //fill the todos wrapper
-  lg( `project ${project.getProjectID()}'s Todos: ` )
-  lg( project.getTodosArr() )
-  project.getTodosArr().forEach( todo=>{
-    //make the todo's html element. pick element for data-id location wisely...
-    const todoDiv = document.createElement('div');
-    todoDiv.className = 'todoDiv';
-    const todoTitle = document.createElement('input')
-    todoTitle.className = 'todoTitle';
-    todoTitle.placeholder = todo.getTitle();
-    const todoNotes = document.createElement('input');
-    todoNotes.className = 'todoNotes';
-    todoNotes.placeholder = todo.getNotes(); // ...................................continue here with completed state checkbox
-    
-
-    //append todo's children
-    todoDiv.append(todoTitle, todoNotes);
-    //append todo to wrapper in project
-    todosWrap.append( todoDiv )
-  } );
-
+  //fill the todos wrapper in other module, this one too busy
+  renderTodos( project, todosWrap );
   //fill project and its parent
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
   document.querySelector('body').append( projectDiv );
@@ -90,12 +69,10 @@ const renderProject = project=> {
 //made by passing in a number type argument for ID
 //have: title, notes, due date/time, priorityLevel, completion state
 const makeTodo = id=> {
-  let title = '...Untitled Todo', dueDate = '', dueTime = '', notes = '...add notes', priorityLevel = 'normal', completedState = false;
-
+  let title = '...Untitled Todo', dueDate = '', dueTime = '',
+      notes = '...add notes', priorityLevel = '', completedState = false;
   //fn to toggle completedState of a todo instance. somehow call from a checkbox event listener, maybe choose the todo object using the id from a data-* attribute?
-  const toggleCompletedState = ()=> {
-    completedState = completedState ? false : true;
-  }
+  const toggleCompletedState = ()=> completedState = completedState ? false : true;
   //fn to set priority level of a todo instance to 'high','normal',or 'low'
   const setPriorityLevel = newLevel=> priorityLevel = newLevel;
 
@@ -110,6 +87,51 @@ const makeTodo = id=> {
     getCompletedState: ()=> completedState,
     toggleCompletedState,
   }
+}
+//Todo render module
+const renderTodos = ( project, todosWrap )=> {
+  // lg( `project ${project.getProjectID()}'s Todos to render: ` )
+  // lg( project.getTodosArr() )
+  project.getTodosArr().forEach( todo=>{
+    //make the todo's html elements. pick element for data-id location wisely when adding that functionality...
+    const todoDiv = document.createElement('div');
+    todoDiv.className = 'todoDiv';
+    const todoTitle = document.createElement('input')
+    todoTitle.className = 'todoTitle';
+    todoTitle.placeholder = todo.getTitle();
+    const completionBox = document.createElement('input'); //completed state checkbox
+    completionBox.className = 'completionBox';
+    completionBox.setAttribute('type','checkbox');
+    completionBox.checked = todo.getCompletedState();
+    const todoNotes = document.createElement('input');
+    todoNotes.className = 'todoNotes';
+    todoNotes.placeholder = todo.getNotes();
+    //todo due date picker, call setDueDate()
+    
+
+    //todo priority selector element
+    const prioritySelect = document.createElement('select');
+    prioritySelect.className = 'prioritySelect';
+    const highOption = document.createElement('option');
+    highOption.value = 'high';
+    highOption.text = 'high';
+    const normalOption = document.createElement('option');
+    normalOption.value = 'normal';
+    normalOption.text = 'normal';
+    normalOption.selected = true; //default option
+    const lowOption = document.createElement('option');
+    lowOption.value = 'low';
+    lowOption.text = 'low';
+    const priorityOptGroup = document.createElement('optgroup'); //labeled wrapper
+    priorityOptGroup.label = 'Priority:';
+    priorityOptGroup.append( highOption, normalOption, lowOption );
+    prioritySelect.append( priorityOptGroup );
+
+    //append todo's children
+    todoDiv.append(todoTitle, completionBox, todoNotes, prioritySelect);
+    //append todo to wrapper in project
+    todosWrap.append( todoDiv )
+  } );
 }
 
 

@@ -12,6 +12,7 @@ button { display: block; }
   --black: hsl(0, 0%, 0%);
   --white: hsl(0, 0%, 100%);
   /* tailwind palette based, then hue shifted */
+  /*blue*//*
   --bg950: hsl(199, 91%, 9%);
   --bg900: hsl(197, 86%, 16%);
   --bg800: hsl(196, 88%, 20%);
@@ -23,6 +24,19 @@ button { display: block; }
   --fg200: hsl(185, 76%, 80%);
   --fg100: hsl(182, 80%, 90%);
   --fg50:  hsl(185, 81%, 96%);
+  */
+  /*brown (for dev)*/
+  --bg950: hsl(33, 91%, 9%);
+  --bg900: hsl(31, 86%, 16%);
+  --bg800: hsl(30, 88%, 20%);
+  --bg700: hsl(30, 94%, 24%);
+  --bg600: hsl(28, 94%, 30%);
+  --mg500: hsl(27, 84%, 39%);
+  --fg400: hsl(25, 64%, 52%);
+  --fg300: hsl(23, 72%, 67%);
+  --fg200: hsl(19, 76%, 80%);
+  --fg100: hsl(16, 80%, 90%);
+  --fg50:  hsl(19, 81%, 96%);
 
 }
 
@@ -66,10 +80,24 @@ body {
   }
 }
 .todosWrap {
-  padding: 0 1rem;
-  .todoNotes{
-    width: 90%;
-    margin: 0 auto;
-    display: block;
+  .todoDiv {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    background-color: var(--fg100);
+    margin: 0 0 0.5rem 0;
+    .todoTitle {
+      flex-basis: 87%;
+    }
+    .todoNotes {
+      flex-basis: 75%;
+      margin: 0 auto 0.25rem;
+      display: block;
+    }
+    .completionBox {
+      width: 2rem;
+      height: 2rem;
+      accent-color: var(--fg400);
+    }
   }
 }
