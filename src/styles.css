@@ -103,6 +103,7 @@ body {
     width: 2rem;
     height: 2rem;
     accent-color: var(--fg400);
+    cursor: pointer;
   }
   .dueDateTime {
     flex-basis: 42%;

@@ -53,6 +53,7 @@ const renderProject = project=> {
   descriptionInput.placeholder = `${ project.getDescriptionPlaceholder() }`;
   const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
   removeProjectBtn.className = 'removeProjectBtn';
+  removeProjectBtn.setAttribute( 'data-project-id', `${ project.getProjectID() }`);
   removeProjectBtn.textContent = 'remove project ❌';
   const removeCompletedTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
   removeCompletedTodosBtn.className = 'removeCompletedTodosBtn';
@@ -60,6 +61,7 @@ const renderProject = project=> {
   removeCompletedTodosBtn.textContent = 'clear done todos 🗑';
   const addTodoBtn = document.createElement('button'); //add todo button
   addTodoBtn.className = 'addTodoBtn';
+  addTodoBtn.setAttribute( 'data-project-id', `${ project.getProjectID() }`);
   addTodoBtn.textContent = 'add todo➕';
   const projectBtnsWrap = document.createElement('div'); //btns wrapper
   projectBtnsWrap.className = 'projectBtnsWrap';
@@ -71,7 +73,7 @@ const renderProject = project=> {
   renderTodos( project, todosWrap ); //fill the todos wrapper in other module, this one too busy
   //fill project and its parent with it
   projectDiv.append(titleInput, descriptionInput, projectBtnsWrap, todosWrap);
-  document.querySelector('body').append( projectDiv );
+  document.querySelector('#projectsWrap').append( projectDiv );
 
   //add event listeners in other module
   addProjectListeners( projectDiv,project );
@@ -82,11 +84,13 @@ const addProjectListeners = (projectDiv, project)=> {
   //if listener removal is needed in future, make an AbortController here and pass its signal in the addEventListener options
   projectDiv.addEventListener( 'click' , e=> {
     e.stopPropagation();
+    //multiple use variable
+    const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.dataset.projectId }']`)
     // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
 
     //handle project removal with: appFlow.removeProject(project_id)
     if ( e.target.className === 'removeProjectBtn' ) {
-      appFlow.removeProject( e.target.parentElement.parentElement.dataset.projectId );
+      appFlow.removeProject( e.target.dataset.projectId );
     }
 
     //handle todo expansion button clicks
@@ -119,8 +123,14 @@ const addProjectListeners = (projectDiv, project)=> {
         }
       });
       project.removeCompletedTodos(...removalIDs);
-      //after the todosArr is cleaned up, rerender todos... choose correct todos wrapper
-      renderTodos( project, document.querySelector(`.todosWrap[data-project-id='${ e.target.dataset.projectId }']`) )
+      //after the todosArr is cleaned up, rerender todos
+      renderTodos( project, todosWrap );
+    }
+
+    // handle add todo button clicks, rerender todos
+    if ( e.target.className === 'addTodoBtn' ) {
+      project.addTodo();
+      renderTodos( project, todosWrap )
     }
 
   });
@@ -128,7 +138,7 @@ const addProjectListeners = (projectDiv, project)=> {
   //handle the bubbling focusout events when inputs lose focus
   projectDiv.addEventListener( 'focusout' , e=> {
     e.stopPropagation();
-    lg('this lost focus: ' + e.target.outerHTML ); // nice output of element in console
+    // lg('this lost focus: ' + e.target.outerHTML ); // nice output of element in console
 
     //handle project's title edits
     if ( e.target.tagName === 'INPUT' && e.target.placeholder === '...Project Title' ) {
@@ -174,7 +184,7 @@ const makeTodo = id=> {
 }
 //Todo render module
 const renderTodos = ( project, todosWrap )=> {
-  //clear old todos if they exist
+  //clear old todos... this fn currently rerenders all todos per invocation
   todosWrap.innerHTML = '';
   // lg( `project ${project.getProjectID()}'s Todos to render: ` )
   // lg( project.getTodosArr() )
@@ -234,6 +244,12 @@ const renderTodos = ( project, todosWrap )=> {
 const appFlow = ( ()=> {
   //store projects in an array. later, default to one project if the localStorage doesn't have any
   let projectsArr = [], projectCreationID = 0;
+
+  //need to wrap projects in a container that can be wiped for rerender
+  const projectsWrap = document.createElement('div');
+  projectsWrap.id = 'projectsWrap';
+  document.querySelector('body').append( projectsWrap );
+
   //if local storage is devoid of projects...
   //localStorage checking logic goes here...
   //...make a new one with ID from a counter, push it in, and increment ID counter:
@@ -257,7 +273,7 @@ const appFlow = ( ()=> {
     //filter returns a shallow copy, use instead of a loop with in place splice
     projectsArr = projectsArr.filter( project=> project.getProjectID() !== +id ); //unary plus for number from string
     //removes all nodes, ok to use since non user generated code. Setting innerHTML to an empty string removes all child elements and event listeners attached to them.
-    document.querySelector('body').innerHTML = '';
+    document.querySelector('#projectsWrap').innerHTML = '';
     projectsArr.forEach( project=> renderProject(project) );
   }
 
