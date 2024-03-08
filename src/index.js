@@ -1,8 +1,8 @@
 /* Next task:
-- make a button to add new project to the appFlow projectsArr
+-  after editing a todo, if a rerender occurs, logic is needed to render the actual data for the todo. other parts in a todo need this logic check too, maybe make it a function?
+
 - add datetimeinput setting functionality
 - add priotity color visualization and ordering (maybe use array sort?) functionality. red/yellow/green = high/norm/low colors, set left and right borders to show this.
--  after editing a todo, if a rerender occurs, logic is needed to render the actual data for the todo. other parts in a todo need this logic check too, maybe make it a function?
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
 */
 
@@ -190,11 +190,9 @@ const makeTodo = id=> {
 }
 //Todo render module: appends todo elements to the wrapper using the todos array from project
 const renderTodos = ( project, todosWrap )=> {
-  lg(`renderTodos invoked for project with ID ${project.getProjectID()}. removing existing todos first...`)
+  // lg(`renderTodos invoked for project with ID ${project.getProjectID()}. removing existing todos first...`)
   todosWrap.innerHTML = ''; // clear any existing todos...
-  // lg( `project ${project.getProjectID()}'s Todos to render: ` )
-  // lg( project.getTodosArr() )
-  project.getTodosArr().forEach( todo=> {
+  project.getTodosArr().forEach( todo=> { //fresh render from project's todos array
     //make the todo's html elements.
     const todoWrap = document.createElement('div');
     const todoExpandBtn = document.createElement('button');
@@ -248,16 +246,28 @@ const renderTodos = ( project, todosWrap )=> {
   } );
 }
 
+// lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
 
 //application flow has an arrow function IIFE that returns an object (with state) to access via appFlow variable
-// lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
 const appFlow = ( ()=> {
-  //store projects in an array. later, default to one project if the localStorage doesn't have any
+  //store projects in an array. new ones made with an ID that is incremented
   let projectsArr = [], projectCreationID = 0;
 
-  //need to wrap projects in a container that can be wiped for rerender
+  //make base elements
+  //button to add a project to projects wrapper
+  const addProjectBtn = document.createElement('button');
+  addProjectBtn.className = 'addProjectBtn';
+  addProjectBtn.textContent = 'New Project';
+  addProjectBtn.addEventListener( 'click', e=> {
+    projectsArr.push( makeProject(projectCreationID) );
+    projectCreationID++;
+    projectsWrap.innerHTML = ''; //wipe container first
+    projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
+  } );
+  document.querySelector('body').append( addProjectBtn );
+  //projects wrapper
   const projectsWrap = document.createElement('div');
-  projectsWrap.className = 'projectsWrap'; //for clarity
+  projectsWrap.className = 'projectsWrap'; //maybe use for styling?
   document.querySelector('body').append( projectsWrap );
 
   //if local storage is devoid of projects...
@@ -265,12 +275,9 @@ const appFlow = ( ()=> {
   //...make a new one with ID from a counter, push it in, and increment ID counter:
   projectsArr.push( makeProject(projectCreationID) );
   projectCreationID++;
-  projectsArr.push( makeProject(projectCreationID) ); //extra project for testing
-  projectCreationID++;
 
-  //todo rendering testing
-  for (let runs = 1; runs<=3; runs++) { projectsArr[0].addTodo() };
-  for (let runs = 1; runs<=4; runs++) { projectsArr[1].addTodo() };
+  //todo rendering testing, fill first project in projectArr with some todos
+  for (let runs = 1; runs<=2; runs++) { projectsArr[0].addTodo() };
 
   //render each project
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
@@ -282,15 +289,12 @@ const appFlow = ( ()=> {
   const removeProject = id=> {
     //filter returns a shallow copy, use instead of a loop with in place splice
     projectsArr = projectsArr.filter( project=> project.getProjectID() !== +id ); //unary plus for number from string
-    //removes all nodes, ok to use since non user generated code. Setting innerHTML to an empty string removes all child elements and event listeners attached to them.
+    //remove all nodes. it's ok to use innerHTML here since it's not user generated code. Setting innerHTML to an empty string removes all child elements and event listeners attached to them.
     projectsWrap.innerHTML = '';
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
   }
 
   //todo objects functionality testing
-  //make some todos, remove some, then log existing ones
-  // lg ( 'making 5 todos in first project...' )
-  // for (let runs = 1; runs<=5; runs++) { projectsArr[0].addTodo() };
   // lg('setting a todo\'s priority level and logging all for comparison..')
   // projectsArr[0].getTodosArr()[2].setPriorityLevel('high')
   // projectsArr[0].getTodosArr().forEach( (todo, i)=> lg( `priorityLevel of todo at index ${i}: ${todo.getPriorityLevel()}`))
@@ -299,6 +303,3 @@ const appFlow = ( ()=> {
     removeProject
   }
 })();
-
-
-// lg( appFlow.getProjectsArr() ) //testing
