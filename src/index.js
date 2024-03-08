@@ -1,8 +1,10 @@
 /* Next task:
--  after editing a todo, if a rerender occurs, logic is needed to render the actual data for the todo. other parts in a todo need this logic check too, maybe make it a function?
+- make change evt listener for prioritySelect to: add priority color visualization and ordering (maybe use array sort?) functionality. red/yellow/green = high/norm/low colors, set left and right borders to show this.
 
-- add datetimeinput setting functionality
-- add priotity color visualization and ordering (maybe use array sort?) functionality. red/yellow/green = high/norm/low colors, set left and right borders to show this.
+-[ongoing issue to check] after editing a todo, if a rerender occurs, logic is needed to render the actual data for the todo. other parts in a todo need this logic check too, maybe make it a function?
+
+- do not auto close todo's when adding new or clearing done ones
+- new projects should render with at least one todo
 - implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session.
 */
 
@@ -14,8 +16,8 @@ import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand 
 //have: project ID, title, description, 
 //do: store todos, create them, remove completed ones.
 const makeProject = projectID=> {
-  let title = '', titlePlaceholder = '...Project Title',
-      description = '', descriptionPlaceholder = '...Project Description',
+  let title, titlePlaceholder = '...Project Title',
+      description, descriptionPlaceholder = '...Project Description',
       todoCreationID = 0, todosArr = [];
 
   const addTodo = ()=> { //keep here and use closure.
@@ -44,9 +46,12 @@ const appendProject = ( project, projectsWrap )=> {
   //make each project div's children. do any repetitive attribute setting later
   const projectWrap = document.createElement('div');
   const projectTitleInput = document.createElement('input');
-  projectTitleInput.placeholder = `${ project.getTitlePlaceholder() }`;
+  if ( project.getTitle() ){  projectTitleInput.value = project.getTitle() }
+      else { projectTitleInput.placeholder = project.getTitlePlaceholder() }
   const projectDescriptionInput = document.createElement('input');
-  projectDescriptionInput.placeholder = `${ project.getDescriptionPlaceholder() }`;
+  if ( project.getDescription() ){  projectDescriptionInput.value = project.getDescription() }
+      else { projectDescriptionInput.placeholder = project.getDescriptionPlaceholder() }
+  // projectDescriptionInput.placeholder = `${ project.getDescriptionPlaceholder() }`;
   const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
   removeProjectBtn.textContent = 'remove project ❌';
   const clearDoneTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
@@ -59,13 +64,13 @@ const appendProject = ( project, projectsWrap )=> {
   Object.entries( //elems obj goes here
     { projectWrap,projectTitleInput,projectDescriptionInput,removeProjectBtn,
     clearDoneTodosBtn,addTodoBtn,projectBtnsWrap,todosWrap }
-  ).forEach( ( [ key, elem ] )=> { //destructuring assignment of entries array!
+  ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
     elem.className = key; //set class name
     elem.setAttribute( 'data-project-id', project.getProjectID() ); //set identifier
   } );
   //append children to their wrappers
   projectBtnsWrap.append( removeProjectBtn, clearDoneTodosBtn, addTodoBtn );
-  renderTodos( project, todosWrap ); //this appends! need to rename to appendTodos
+  appendTodos( project, todosWrap );
   projectWrap.append(projectTitleInput, projectDescriptionInput, projectBtnsWrap, todosWrap);
   projectsWrap.append( projectWrap );
   //add event listeners
@@ -107,16 +112,16 @@ const addProjectListeners = (projectWrap, project)=> {
     //handle clicks on clear done todos buttons
     if ( e.target.className === 'clearDoneTodosBtn' ) {
       project.removeCompletedTodos(); //filter out project's completed todos
-      renderTodos( project, todosWrap ); //then rerender todos
+      appendTodos( project, todosWrap ); //then rerender todos
     }
 
     // handle add todo button clicks, rerender todos
     if ( e.target.className === 'addTodoBtn' ) {
       project.addTodo();
-      renderTodos( project, todosWrap )
+      appendTodos( project, todosWrap )
     }
 
-  });
+  } );
 
   //handle the bubbling focusout events when inputs lose focus
   projectWrap.addEventListener( 'focusout' , e=> {
@@ -157,20 +162,50 @@ const addProjectListeners = (projectWrap, project)=> {
       lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
     }
 
-  });
+  } );
+
+  //handle the bubbling change events when inputs lose focus
+  projectWrap.addEventListener( 'change' , e=> {
+    e.stopPropagation();
+    lg('this changed value: ' + e.target.outerHTML ); // nice output of element in console
+
+    //handle individual todo due date/time setting by calling todo.setDueDateTime()
+    //info: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
+    //lg( new Date().toISOString().slice(0,16) ); // YYYY-MM-DDThh:mm format string value for <input type="datetime-local">
+    if ( e.target.className === 'dueDateTimeInput' ) {
+      lg('old todo dueDateTime:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
+
+      project.getTodosArr()
+      .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
+      .setDueDateTime(e.target.value);
+
+      lg('new todo dueDateTime:' + project.getTodosArr()
+      .find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
+    }
+
+    //handle changes to selects with class 'prioritySelect'
+    
+
+
+
+
+
+
+
+
+  } );
+
 }
 
 //todo objects
 //made by passing in a number type argument for ID
 //have: title, notes, due date/time, priorityLevel, completion state
 const makeTodo = id=> {
-  let title = '', titlePlaceholder = '...Untitled Todo', dueDate = '', dueTime = '',
-      notes = '', notesPlaceholder = '...add notes',
-      priorityLevel = 'normal', completedState = false;
+  let title, titlePlaceholder = '...Untitled Todo',
+      notes, notesPlaceholder = '...add notes',
+      dueDateTime, priorityLevel = 'normal', completedState = false;
   //fn to toggle completedState of a todo instance. somehow call from a checkbox event listener, maybe choose the todo object using the id from a data-* attribute?
   const toggleCompletedState = ()=> completedState = completedState ? false : true;
-  //fn to set priority level of a todo instance to 'high','normal',or 'low'
-  const setPriorityLevel = newLevel=> priorityLevel = newLevel;
 
   return { //public exposure
     getTodoID: ()=> id,
@@ -180,37 +215,37 @@ const makeTodo = id=> {
     getNotes: ()=> notes,
     setNotes: newNotes=> notes = newNotes,
     getNotesPlaceholder: ()=> notesPlaceholder,
-    getDueDate: ()=> dueDate,
-    getDueTime: ()=> dueTime,
+    getDueDateTime: ()=> dueDateTime,
+    setDueDateTime: newDueDateTime=> dueDateTime = newDueDateTime,
     getPriorityLevel: ()=> priorityLevel,
-    setPriorityLevel,
+    setPriorityLevel: newLevel=> priorityLevel = newLevel, // 'high'/normal/low
     getCompletedState: ()=> completedState,
     toggleCompletedState,
   }
 }
 //Todo render module: appends todo elements to the wrapper using the todos array from project
-const renderTodos = ( project, todosWrap )=> {
-  // lg(`renderTodos invoked for project with ID ${project.getProjectID()}. removing existing todos first...`)
+const appendTodos = ( project, todosWrap )=> {
+  // lg(`appendTodos invoked for project with ID ${project.getProjectID()}. removing existing todos first...`)
   todosWrap.innerHTML = ''; // clear any existing todos...
-  project.getTodosArr().forEach( todo=> { //fresh render from project's todos array
+  //rebuild from project's todos array
+  project.getTodosArr().forEach( todo=> {
     //make the todo's html elements.
     const todoWrap = document.createElement('div');
     const todoExpandBtn = document.createElement('button');
     todoExpandBtn.textContent = '▼'; //opposite: ▲
     const todoTitleInput = document.createElement('input')
-    todoTitleInput.placeholder = todo.getTitlePlaceholder();
+    if ( todo.getTitle() ) {  todoTitleInput.value = todo.getTitle() }
+      else { todoTitleInput.placeholder = todo.getTitlePlaceholder() }
     const completionBoxInput = document.createElement('input'); //completed state checkbox
     completionBoxInput.setAttribute('type','checkbox');
     completionBoxInput.checked = todo.getCompletedState();
     const todoNotesInput = document.createElement('input');
-    todoNotesInput.placeholder = todo.getNotesPlaceholder();
-    //todo due date/time picker. need to call setDueDate()
-    //uses: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
+    if ( todo.getNotes() ) { todoNotesInput.value = todo.getNotes() }
+      else { todoNotesInput.placeholder = todo.getNotesPlaceholder() }
+    //todo due date/time picker
     const dueDateTimeInput = document.createElement('input');
     dueDateTimeInput.setAttribute('type', 'datetime-local');
-    //date/time pick testing
-    //lg( new Date().toISOString().slice(0,16) ); //YYYY-MM-DDThh:mm format string is the value of <input type="datetime-local">
-
+    todo.getDueDateTime() && ( dueDateTimeInput.value = todo.getDueDateTime() ) //short circuiting logical AND
     //todo priority selector element
     const prioritySelect = document.createElement('select');
     const highOption = document.createElement('option');
@@ -219,7 +254,7 @@ const renderTodos = ( project, todosWrap )=> {
     const normalOption = document.createElement('option');
     normalOption.value = 'normal';
     normalOption.text = 'normal';
-    normalOption.selected = true; //default. or assign with a switch: todo.getPriorityLevel()
+    normalOption.selected = true; //default. or assign an option as selected using todo.getPriorityLevel()
     const lowOption = document.createElement('option');
     lowOption.value = 'low';
     lowOption.text = 'low';
@@ -230,7 +265,7 @@ const renderTodos = ( project, todosWrap )=> {
     Object.entries( //object of elems to set attributes on goes here
       { todoWrap, todoExpandBtn, todoTitleInput,completionBoxInput,
       todoNotesInput,dueDateTimeInput,prioritySelect }
-    ).forEach( ( [ key, elem ] )=> { //destructuring assignment of entries array!
+    ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
       elem.className = key; //set class from element reference name
       if ( ['todoNotesInput', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { //add extra classes to specific elems
         elem.classList.add('noDisplay');
@@ -302,4 +337,4 @@ const appFlow = ( ()=> {
     getProjectsArr: ()=> projectsArr,
     removeProject
   }
-})();
+} )();
