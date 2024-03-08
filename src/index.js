@@ -1,6 +1,6 @@
 /*-- Next tasks:
 -implement use of projectSeedsArr in localStorage progress:
-need to implement todos into localStorage saving using storeTodoSeeds fn
+need to implement todos into localStorage, using makeTodosSeed fn.
 
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
@@ -340,20 +340,32 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
         projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project[key]();
       }
     } );
+    //make and add seed object for this project's todos
+    projectSeed.todosSeed = makeTodosSeed( project );
     projectSeedsArr.push( projectSeed );
   } );
   localStorage.setItem( 'projectSeedsArr', JSON.stringify( projectSeedsArr ) );
   // lg( projectSeedsArr ); //testing
   // lg( JSON.parse( localStorage.getItem('projectSeedsArr') ) ); //testing
-
 }
-//make seeds of individual todos in projects to store in localStorage. ...start with making an object for each project that hold an array of todos data objects for each todo
-const storeTodoSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
+
+//make a seed object for the todos of a project. it should hold objects with data for each todo. project passed in is the current project used within storeProjectSeeds
+const makeTodosSeed = project=> {
+  const todoSeed = {};
+  //*remember to clear local storage first in dev to have the first todo
+  lg( project.getTodosArr() )
+  
+
+  
 
 
 
 
 
+
+
+
+  return todoSeed;
 }
 
 
@@ -399,8 +411,8 @@ const appFlow = ( ()=> {
     //make new project(s) with ID from a counter, push it in, increment ID creation counter
     projectsArr.push( makeProject(projectCreationID) );
     projectCreationID++;
-    projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
-    projectCreationID++;
+    // projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
+    // projectCreationID++;
     //first run: first project should have one todo
     projectsArr[0].addTodo();
   }
@@ -415,6 +427,7 @@ const appFlow = ( ()=> {
     //Setting innerHTML to empty string: removes child elems & their event listeners
     projectsWrap.innerHTML = '';
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
+    storeProjectSeeds(); //projectsArr modified, update localStorage
   }
   
   //store project seed objects in localStorage
