@@ -1,6 +1,6 @@
 /*-- Next tasks:
 -implement use of projectSeedsArr in localStorage progress:
-need to implement todos into localStorage, using makeTodosSeed fn.
+need to implement rebuildinh todos from localStorage
 
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
@@ -100,6 +100,8 @@ const addProjectListeners = (projectWrap, project)=> {
     //handle project removal with: appFlow.removeProject(project_id)
     if ( e.target.className === 'removeProjectBtn' ) {
       appFlow.removeProject( e.target.dataset.projectId );
+
+      storeProjectSeeds(); //update localStorage
     }
 
     //handle todo expansion button clicks, store open state for rerenders...
@@ -110,27 +112,31 @@ const addProjectListeners = (projectWrap, project)=> {
         i>2 && ( elem.classList.toggle('noDisplay') )// hide unecessary children
       } );
       todo.setOpenState( todo.getOpenState() ? false : true );
+
+      storeProjectSeeds(); //update localStorage
     }
 
     // Handle clicks on completion checkbox inputs to toggle completed states of todos
     if (e.target.classList.contains('completionBoxInput')) {
       project.getTodosArr().find(todo => todo.getTodoID() === +e.target.dataset.todoId).toggleCompletedState();
+
+      storeProjectSeeds(); //update localStorage
     }
 
     //handle clicks on clear done todos buttons
     if ( e.target.className === 'clearDoneTodosBtn' ) {
       project.removeCompletedTodos(); //filter out project's completed todos
       appendTodos( project, todosWrap ); //then rerender todos
+
+      storeProjectSeeds(); //update localStorage
     }
 
     // handle add todo button clicks, rerender todos
     if ( e.target.className === 'addTodoBtn' ) {
       project.addTodo();
       appendTodos( project, todosWrap );
-      // lg( project.getTodosArr() )//testing
 
-      //update localStorage...
-      storeProjectSeeds();
+      storeProjectSeeds(); //update localStorage
     }
 
   } );
@@ -160,10 +166,12 @@ const addProjectListeners = (projectWrap, project)=> {
       project.getTodosArr()
         .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
         .setTitle(e.target.value);
+      
+      storeProjectSeeds(); //update localStorage
       //testing
       // lg( 'new todo title:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getTitle() );
-      lg('todo title input lost focus.here is current projectsArr:')
-      lg( appFlow.getProjectsArr() )
+      // lg('todo title input lost focus. here is current projectsArr:')
+      // lg( appFlow.getProjectsArr() )
     }
 
     //handle individual todo notes edits
@@ -172,6 +180,8 @@ const addProjectListeners = (projectWrap, project)=> {
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setNotes(e.target.value);
+
+      storeProjectSeeds(); //update localStorage
       // lg( 'new todo notes:' + project.getTodosArr().find( todo=> todo.getTodoID() === +e.target.dataset.todoId ).getNotes() );
     }
 
@@ -180,8 +190,7 @@ const addProjectListeners = (projectWrap, project)=> {
   //handle the bubbling change events, usually when inputs lose focus
   projectWrap.addEventListener( 'change' , e=> {
     e.stopPropagation();
-    // lg('this changed value: ' + e.target.outerHTML ); // nice output of element in console
-    //multi use variable for cleaner invocations later
+    // lg('this changed value: ' + e.target.outerHTML );
     const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.parentElement.parentElement.dataset.projectId }']`)
 
     //handle individual todo due date/time setting by calling todo.setDueDateTime()
@@ -194,6 +203,7 @@ const addProjectListeners = (projectWrap, project)=> {
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setDueDateTime(e.target.value);
 
+      storeProjectSeeds(); //update localStorage
       // lg('new todo dueDateTime:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getDueDateTime() );
     }
 
@@ -204,10 +214,11 @@ const addProjectListeners = (projectWrap, project)=> {
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setPriorityLevel(e.target.value); // target.value is 'high'/'normal'/'low'
+      
+      appendTodos( project, todosWrap ) //rerender for css
 
+      storeProjectSeeds(); //update localStorage
       // lg('new todo priority:' + project.getTodosArr().find(todo=> todo.getTodoID() === +e.target.dataset.todoId).getPriorityLevel() );
-
-      appendTodos( project, todosWrap ) //rerender
     }
 
   } );
@@ -341,7 +352,7 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
       }
     } );
     //make and add seed object for this project's todos
-    projectSeed.todosSeed = makeTodosSeed( project );
+    projectSeed.todoSeedsArr = makeTodoSeedsArr( project );
     projectSeedsArr.push( projectSeed );
   } );
   localStorage.setItem( 'projectSeedsArr', JSON.stringify( projectSeedsArr ) );
@@ -349,24 +360,42 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
   // lg( JSON.parse( localStorage.getItem('projectSeedsArr') ) ); //testing
 }
 
-//make a seed object for the todos of a project. it should hold objects with data for each todo. project passed in is the current project used within storeProjectSeeds
-const makeTodosSeed = project=> {
-  const todoSeed = {};
-  //*remember to clear local storage first in dev to have the first todo
-  lg( project.getTodosArr() )
-  
+//return array of todo seeds for the current project
+const makeTodoSeedsArr = project=> {
+  //todoSeedsArr will be stored in each projectSeed and used to rebuild todos
+  const todoSeedsArr = [];
+  //**remember to clear local storage first in dev to have the first todo
+  //make each todoSeed
+  project.getTodosArr().forEach( todo=> {
+    const todoSeed = {};
+    //Store only data of properties you need
+    Object.keys( todo )
+    .filter( key=> ['getTodoID','getTitle','getNotes','getDueDateTime','getPriorityLevel','getCompletedState','getOpenState'].includes(key) )
+    .forEach( key=> {
+      switch (key) {
+        case 'getTitle':
+          todoSeed[ key[3].toLowerCase() + key.slice(4) ] = todo.getTitle() ? todo.getTitle() : ''; //set empty string for JSON if undefined is returned
+          break;
+        case 'getNotes':
+          todoSeed[ key[3].toLowerCase() + key.slice(4) ] = todo.getNotes() ? todo.getNotes() : '';
+          break;
+        case 'getDueDateTime':
+          todoSeed[ key[3].toLowerCase() + key.slice(4) ] = todo.getDueDateTime() ? todo.getDueDateTime() : '';
+          break;
+        default:
+          //compute rest of property names for the todoSeed obj and methods to call from the current todo obj in square brackets:
+          todoSeed[ key[3].toLowerCase() + key.slice(4) ] = todo[key]();
+      }
+    } );
+    todoSeedsArr.push( todoSeed );
+  } );
 
-  
-
-
-
-
-
-
-
-
-  return todoSeed;
+  return todoSeedsArr;
 }
+
+
+
+
 
 
 // lg(globalThis) //webpack executes your code with its own module scope to avoid polluting the global scope!!!
@@ -427,7 +456,6 @@ const appFlow = ( ()=> {
     //Setting innerHTML to empty string: removes child elems & their event listeners
     projectsWrap.innerHTML = '';
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
-    storeProjectSeeds(); //projectsArr modified, update localStorage
   }
   
   //store project seed objects in localStorage
