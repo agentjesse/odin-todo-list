@@ -1,6 +1,7 @@
 /*-- Next tasks:
 
 --- Optional tasks:
+- add confirm popup for remove project /clear todos buttons.
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 -enable wrapping for DueDateTime inputs via a 3rd party library for date/time pickers
 */
@@ -10,16 +11,14 @@ import './styles.css'
 import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand loggers
 
 //project objects
-//have: project ID, title, description, 
 //do: store todos, create them, remove completed ones.
-//overwrite values from localStorage project seed objects if provided
+//overwrite project values from localStorage project seed objects if provided
 const makeProject = (projectID, projectSeed)=> {
   let title, titlePlaceholder = '...Project Title',
       description, descriptionPlaceholder = '...Description',
       todoCreationID = 0, todosArr = [];
 
-  //overwrite from seed if it is passed in as an argument
-  if ( projectSeed ) {
+  if ( projectSeed ) { //overwrite from seed if it is passed in
     //overwrite project variables using object destructuring from the projectSeed obj.
     //Parenthesis force the JS engine to evaluate as an expression including the object pattern to destructure, instead of a block statement.
     ( { title, description, todoCreationID } = projectSeed );
@@ -68,38 +67,37 @@ const appendProject = ( project, projectsWrap )=> {
   projectDescriptionTextArea.placeholder = project.getDescriptionPlaceholder(); //always set this
   project.getDescription() && ( projectDescriptionTextArea.value = project.getDescription() );
 
-  const removeProjectBtn = document.createElement('button'); //remove project button (needs confirm)
+  const projectBtnsWrap = document.createElement('div');
+  const removeProjectBtn = document.createElement('button');
   removeProjectBtn.textContent = 'remove project ❌';
-  const clearDoneTodosBtn = document.createElement('button'); //remove completed todos button (needs confirm)
+  const clearDoneTodosBtn = document.createElement('button');
   clearDoneTodosBtn.textContent = 'clear done todos 🗑';
   const addTodoBtn = document.createElement('button');
   addTodoBtn.textContent = 'add todo➕';
-  const projectBtnsWrap = document.createElement('div');
 
   const todosWrap = document.createElement('div');
-  //set class/data attributes to elems from their reference names via the keys of an object. Object.entries(object) returns an array of [key,value] pair arrays.
-  Object.entries( //elems obj goes here
+  //set class/data attributes to elems from their reference names via the keys of an object. Object.entries({elements object}) returns an array of [key,value] pair arrays
+  Object.entries(
     { projectWrap,projectTitleTextArea,projectDescriptionTextArea,removeProjectBtn,
     clearDoneTodosBtn,addTodoBtn,projectBtnsWrap,todosWrap }
   ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
-    elem.className = key; //set class name
-    elem.setAttribute( 'data-project-id', project.getProjectID() ); //set identifier
-    //change textarea elems to start with 1 row
-    key.includes('TextArea') && ( elem.rows = 1 );
+    elem.className = key;
+    elem.setAttribute( 'data-project-id', project.getProjectID() );
+    key.includes('TextArea') && ( elem.rows = 1 );//textarea elems must start with 1 row
   } );
   //append children to their wrappers
   projectBtnsWrap.append( removeProjectBtn, clearDoneTodosBtn, addTodoBtn );
   appendTodos( project, todosWrap );
   projectWrap.append(projectTitleTextArea, projectDescriptionTextArea, projectBtnsWrap, todosWrap);
   projectsWrap.append( projectWrap );
-  // after textarea elements are appended, call the auto height resizer for the ones displayed. call resizer for textarea with display: none; when shown
+  // after textarea elements are appended, call the auto height resizer for the ones displayed. call resizer for textareas with display:none from expand btn listener
   document.querySelectorAll('textarea:not(.noDisplay)')
   .forEach( elem=> textAreaResize(elem) );
   //add event listeners
   addProjectListeners( projectWrap,project );
 }
 
-// auto height resizing for textarea elements to their wrapping content. located here for access from other fns
+// auto height resizing for textarea elements pegged to their content
 const textAreaResize = textarea=> {
   textarea.style.height = 'auto'; //resets height to handle content decreases
   textarea.style.height = (textarea.scrollHeight) + 'px';
@@ -112,7 +110,6 @@ const addProjectListeners = (projectWrap, project)=> {
     e.stopPropagation();
     //multi use variable for cleaner invocations later
     const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.dataset.projectId }']`)
-    // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
 
     //handle project removal with: removeProject(project_id)
     if ( e.target.className === 'removeProjectBtn' ) {
@@ -161,11 +158,9 @@ const addProjectListeners = (projectWrap, project)=> {
   //handle the bubbling focusout events when elements lose focus
   projectWrap.addEventListener( 'focusout' , e=> {
     e.stopPropagation();
-    // lg('this lost focus: ' + e.target.outerHTML ); // nice output of element in console
-
     //handle project's title edits
     if ( e.target.className === 'projectTitleTextArea' ) {
-      project.setTitle(e.target.value); //set 'free variable' of setTitle() closure
+      project.setTitle(e.target.value);
 
       textAreaResize(e.target); //auto resizing
       storeProjectSeeds(); //update localStorage
@@ -175,16 +170,15 @@ const addProjectListeners = (projectWrap, project)=> {
     if ( e.target.className === 'projectDescriptionTextArea' ) {
       project.setDescription(e.target.value);
 
-      textAreaResize(e.target); //auto resizing
+      textAreaResize(e.target);
       storeProjectSeeds(); //update localStorage
     }
 
     //handle individual todo title edits
     if ( e.target.className === 'todoTitleTextArea' ) {
-      //find the correct todo object, set its new title string
       project.getTodosArr()
-        .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
-        .setTitle(e.target.value);
+      .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
+      .setTitle(e.target.value);
       
       textAreaResize(e.target);
       storeProjectSeeds(); //update localStorage
@@ -192,7 +186,6 @@ const addProjectListeners = (projectWrap, project)=> {
 
     //handle individual todo notes edits
     if ( e.target.className === 'todoNotesTextArea' ) {
-      //find the correct todo object, set its new notes string
       project.getTodosArr()
       .find( todo=> todo.getTodoID() === +e.target.dataset.todoId )
       .setNotes(e.target.value);
@@ -206,7 +199,6 @@ const addProjectListeners = (projectWrap, project)=> {
   //handle the bubbling change events, usually when elements lose focus
   projectWrap.addEventListener( 'change' , e=> {
     e.stopPropagation();
-    // lg('this changed value: ' + e.target.outerHTML );
     const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.parentElement.parentElement.dataset.projectId }']`)
 
     //handle individual todo due date/time setting by calling todo.setDueDateTime()
@@ -244,6 +236,7 @@ const addProjectListeners = (projectWrap, project)=> {
 //todo objects
 //pass in a number type for ID, optional localStorage seed
 //have: title, notes, due date/time, priorityLevel, completion state
+//do: toggle their own completed state
 const makeTodo = (id, todoSeed)=> {
   let title, titlePlaceholder = '...Untitled Todo',
       notes, notesPlaceholder = '...Notes',
@@ -279,11 +272,10 @@ const makeTodo = (id, todoSeed)=> {
 }
 //Todo render module: appends todo elements to the wrapper using the todos array from project
 const appendTodos = ( project, todosWrap )=> {
-  // lg(`appendTodos invoked for project with ID ${project.getProjectID()}. removing existing todos first...`)
   todosWrap.innerHTML = ''; // clear any existing todos...
   //rebuild from project's todos array
   project.getTodosArr().forEach( todo=> {
-    //make the todo's html elements.
+    //make the todo's html elements:
     const todoWrap = document.createElement('div');
 
     const todoExpandBtn = document.createElement('button');
@@ -305,7 +297,7 @@ const appendTodos = ( project, todosWrap )=> {
     //todo due date/time picker
     const dueDateTimeInput = document.createElement('input');
     dueDateTimeInput.setAttribute('type', 'datetime-local');
-    todo.getDueDateTime() && ( dueDateTimeInput.value = todo.getDueDateTime() ) //short circuiting logical AND
+    todo.getDueDateTime() && ( dueDateTimeInput.value = todo.getDueDateTime() )
 
     //todo priority selector element
     const prioritySelect = document.createElement('select');
@@ -335,20 +327,21 @@ const appendTodos = ( project, todosWrap )=> {
         todoWrap.classList.add( 'lowPriority' )
     }
 
-    //set class/data attributes for elems
+    //set class/data attributes for elems from element reference names
     Object.entries( //object of elems to set attributes on goes here
       { todoWrap, todoExpandBtn, todoTitleTextArea,completionBoxInput,
       todoNotesTextArea,dueDateTimeInput,prioritySelect }
     ).forEach( ( [ key, elem ] )=> { //destructuring assignment to parameters from current key/value pair array
-      elem.classList.add( key ); //set class from element reference name
-      if ( ['todoNotesTextArea', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { //add extra classes to specific elems
+      elem.classList.add( key );
+      //add extra classes to specific elems
+      if ( ['todoNotesTextArea', 'dueDateTimeInput', 'prioritySelect'].includes(key) ) { 
         if ( !todo.getOpenState() ){ 
           elem.classList.add('noDisplay');
         }
       }
       //change textarea elems to start with 1 row
       key.includes('TextArea') && ( elem.rows = 1 );
-      elem.setAttribute('data-todo-id', `${ todo.getTodoID() }`); //set identifier
+      elem.setAttribute('data-todo-id', `${ todo.getTodoID() }`);
     } );
     
     //append children to their wrappers
@@ -385,13 +378,10 @@ const storeProjectSeeds = ( projectsArr = appFlow.getProjectsArr() )=> {
     projectSeedsArr.push( projectSeed );
   } );
   localStorage.setItem( 'projectSeedsArr', JSON.stringify( projectSeedsArr ) );
-  // lg( projectSeedsArr ); //testing
-  // lg( JSON.parse( localStorage.getItem('projectSeedsArr') ) ); //testing
 }
 
-//return array of todo seeds for the current project
+//return array of todo seed objects for the current project for rebuilding
 const makeTodoSeedsArr = project=> {
-  //todoSeedsArr will be stored in each projectSeed and used to rebuild todos
   const todoSeedsArr = [];
   //**remember to clear local storage first in dev to have the first todo
   //make each todoSeed
@@ -473,10 +463,7 @@ const appFlow = ( ()=> {
     //make new project(s) with ID from a counter, push it in, increment ID creation counter
     projectsArr.push( makeProject(projectCreationID) );
     projectCreationID++;
-    // projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
-    // projectCreationID++;
-    //first run: first project should have one todo
-    projectsArr[0].addTodo();
+    projectsArr[0].addTodo();//first run: first project should have one todo
   }
 
   //render all projects
