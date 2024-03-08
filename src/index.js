@@ -1,13 +1,15 @@
 /*-- Next tasks:
-- implement use of localStorage to save data on the user’s computer as JSON and rebuild from them if some were there from previous session. push seed data objects into an array for every object in projectsArr and todosArr.
+-implement use of projectSeedsArr in localStorage progress: need to set project title/description/todoCreationID into local storage when they are changed.
 
--fix todo desc. alignment; use wrappers or flex-basis
+-implement todos into localStorage saving too!!
 
 -enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
 
+-fix todo desc. alignment; use wrappers or flex-basis
+
 
 --- Optional tasks:
--
+
 -refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
@@ -19,10 +21,19 @@ import { logToConsole as lg, tableToConsole as tb} from "./logger"; //shorthand 
 //project objects
 //have: project ID, title, description, 
 //do: store todos, create them, remove completed ones.
-const makeProject = projectID=> {
+//overwrite values from localStorage project seed objects if provided
+const makeProject = (projectID, projectSeed)=> {
   let title, titlePlaceholder = '...Project Title',
       description, descriptionPlaceholder = '...Project Description',
       todoCreationID = 0, todosArr = [];
+
+  //overwrite from seed if it is passed in as an argument
+  if ( projectSeed ){
+    //overwrite variables using object destructuring from the projectSeed obj.
+    //Parenthesis force the JS engine to evaluate as an expression including the object pattern to destructure, instead of a block statement.
+    ( { title, description, todoCreationID } = projectSeed );
+
+  }
 
   const addTodo = ()=> { //keep here and use closure.
     todosArr.push( makeTodo(todoCreationID) ); // ID for each todo from counter
@@ -123,7 +134,8 @@ const addProjectListeners = (projectWrap, project)=> {
     // handle add todo button clicks, rerender todos
     if ( e.target.className === 'addTodoBtn' ) {
       project.addTodo();
-      appendTodos( project, todosWrap )
+      appendTodos( project, todosWrap );
+      // lg( project.getTodosArr() )//testing
     }
 
   } );
@@ -311,30 +323,29 @@ const appendTodos = ( project, todosWrap )=> {
 
 //make seeds of data projects need to be rebuilt, store them in localStorage
 const storeProjectSeeds = projectsArr=> {
-
-  localStorage.setItem( 'user', JSON.stringify( {fullName:"Jerry Smith"} ) );
-  lg('localStorage entries: '+localStorage.length+'. object\'s JSON string in \'user\' key: '+localStorage.getItem('user'));
-  lg( JSON.parse( localStorage.getItem('user') ) );
-  lg('==========ignore testing logs above, they will be commented out===========');
-
   const projectSeedsArr = [];
-  projectsArr.forEach( project=> { //iterate over each
-    //make an object of seed data (as JSON strings) from project to se/deserialize. Skip object values (functions/arrays)
-    // The  && operator returns first falsy operand, or the last truthy if all operands are truthy. The || operator returns first truthy operand, or the last falsy if all operands are falsy.
+  projectsArr.forEach( project=> {
+    //make a seed data object (of JSON formatted data strings) from project to se/deserialize.
     const projectSeed = {}
+    //Store only data of properties you need
     Object.keys(project)
-    // .filter( key=> typeof project[key]() !== 'object' ) //bad way to check as this executes the method and adds a todo!
-    .filter( key=> key !== 'addTodo' && key !== 'getTodosArr' )
+    .filter( key=> ['getProjectID','getTitle','getDescription','getTodoCreationID'].includes(key) )
     .forEach( key=> {
-      if ( key.startsWith('get') ) {
+      //getTitle() and getDescription() return undefined; set their seed object values as empty strings for JSON serialization later
+      if ( key === 'getTitle' || key === 'getDescription' ) {
+        projectSeed[ key[3].toLowerCase() + key.slice(4) ] = '';
+      }
+      else {
         //compute property names for the projectSeed object and method names to call from the source object in square brackets:
         projectSeed[ key[3].toLowerCase() + key.slice(4) ] = project[key]();
       }
     } );
     projectSeedsArr.push( projectSeed );
   } );
-  lg( projectSeedsArr ); //testing
-  
+  localStorage.setItem( 'projectSeedsArr', JSON.stringify( projectSeedsArr ) );
+  // lg( projectSeedsArr ); //testing
+  // lg( 'localStorage entries:\n' + localStorage.length + '\nobject\'s JSON string in \'projectSeedsArr\' key:\n' + localStorage.getItem('projectSeedsArr') );
+  // lg( JSON.parse( localStorage.getItem('projectSeedsArr') ) ); //testing
 
 }
 
@@ -352,21 +363,37 @@ const appFlow = ( ()=> {
     projectCreationID++;
     projectsWrap.innerHTML = ''; //wipe container first
     projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
+    lg( 'project added, new projectsArr: ' );
+    lg( projectsArr );
   } );
   const projectsWrap = document.createElement('div');
   projectsWrap.className = 'projectsWrap';
   //append base elements
   document.querySelector('body').append( addProjectBtn, projectsWrap );
 
-  //if local storage is devoid of project seeds...
-  //localStorage checking logic goes here...
-  //...make a new one with ID from a counter, push it in, and increment ID counter:
-  projectsArr.push( makeProject(projectCreationID) );
-  projectCreationID++;
-  projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
-  projectCreationID++;
-  //first run: project[0] in projectArr should have one todo
-  projectsArr[0].addTodo();
+  //check for anything useful in localStorage from previous page visit
+  const projectSeedsArr = JSON.parse( localStorage.getItem('projectSeedsArr') );
+  if ( Array.isArray( projectSeedsArr ) ) {
+    lg( 'useful localStorage data found, listing project seeds:' );
+    projectSeedsArr.forEach( projectSeed=> {
+      lg( projectSeed ); //testing
+      projectsArr.push( makeProject( projectSeed.projectID, projectSeed ) );
+      projectCreationID = projectSeed.projectID + 1;//one higher than last added project id
+    } );
+    lg( 'new projectCreationID: ' + projectCreationID );
+  }
+  else {
+    lg( 'no useful localStorage data found, starting fresh...' );
+    //if local storage has no projectSeedsArr entry:
+    //make new project(s) with ID from a counter, push it in, increment ID creation counter
+    projectsArr.push( makeProject(projectCreationID) );
+    projectCreationID++;
+    projectsArr.push( makeProject(projectCreationID) ); //another empty project, looks nice
+    projectCreationID++;
+    
+    //first run: first project should have one todo
+    projectsArr[0].addTodo();
+  }
 
   //render all projects
   projectsArr.forEach( project=> appendProject( project, projectsWrap ) );
