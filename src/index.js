@@ -84,7 +84,7 @@ const addProjectListeners = (projectDiv, project)=> {
   //if listener removal is needed in future, make an AbortController here and pass its signal in the addEventListener options
   projectDiv.addEventListener( 'click' , e=> {
     e.stopPropagation();
-    //multiple use variable
+    //multi use variable for cleaner invocations later
     const todosWrap = document.querySelector(`.todosWrap[data-project-id='${ e.target.dataset.projectId }']`)
     // lg('clicked: ' + e.target.outerHTML ); // nice output of element in console
 
@@ -111,20 +111,19 @@ const addProjectListeners = (projectDiv, project)=> {
         }
       } );
     }
-    //handle clicks on clear done todos buttons. use projects' removeCompletedTodos(...IDs)
-    //to edit their todos arrays.
+    
+    //handle clicks on clear done todos buttons
     if ( e.target.className === 'removeCompletedTodosBtn' ) {
-      //testing, check todos' completed states before doing anything
+      //testing: check todos' completed states before doing anything
       // project.getTodosArr().forEach( (todo, i)=> lg( `completedState of todo at index ${i}: ${todo.getCompletedState()}`))
-      const removalIDs = [];
-      project.getTodosArr().forEach( todo=> {
+      const removalIDs = [];//removeCompletedTodos invoked with id arguments...bad, need to refactor in future
+      project.getTodosArr().forEach( todo=> { 
         if ( todo.getCompletedState() ) {
           removalIDs.push( todo.getTodoID() );
         }
       });
-      project.removeCompletedTodos(...removalIDs);
-      //after the todosArr is cleaned up, rerender todos
-      renderTodos( project, todosWrap );
+      project.removeCompletedTodos(...removalIDs); //clean up project's todos array
+      renderTodos( project, todosWrap ); //rerender todos
     }
 
     // handle add todo button clicks, rerender todos
