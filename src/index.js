@@ -1,8 +1,7 @@
 /*-- Next tasks:
--enable text wrapping when text is too long for project/todo descriptions/notes. the input needs to expand to fit without overflowing to create a scrolling area.
+-currently on textarea-refactor branch!!! careful with git commands. need to convert all input type texts (project/todo descriptions/notes) into textareas and make an auto resizing fn so they expand vertically when the text wraps. check yahoo email for example code.
 
 --- Optional tasks:
-
 -refactor removeProject fn out of appFlow IIFE. object stored in appFlow should have key: removeProject: id=> removeProject(projectsArr, projectsWrap, id)
 - rerenders via appendTodos() clear out everything first, maybe implement a flag to only delete and append the item being rerendered with an index? or does react's virtual dom handle this?
 */
